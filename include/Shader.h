@@ -16,7 +16,7 @@ public:
 	unsigned int id;
 
 	Shader();
-	Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
+	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
 	
 	void use();
 	
@@ -26,6 +26,7 @@ public:
 	void setFloat(const std::string&, float) const;
 	void setVec3(const std::string&, float, float, float) const;
 	void setVec3(const std::string&, glm::vec3) const;
+	void setVec2(const std::string&, float, float) const;
 	void setMat4(const std::string&, glm::mat4&) const;
 
 	void suicide();

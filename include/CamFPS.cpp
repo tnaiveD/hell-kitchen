@@ -120,3 +120,7 @@ float CamFPS::getSpeed() const {
 glm::vec3 CamFPS::getPos() const{
 	return pos;
 }
+
+glm::vec3 CamFPS::getDir() const {
+	return dir;
+}

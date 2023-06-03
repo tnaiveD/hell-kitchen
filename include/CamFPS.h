@@ -27,6 +27,7 @@ public:
 	glm::mat4& getView();
 	float getSpeed() const;
 	glm::vec3 getPos() const;
+	glm::vec3 getDir() const;
 
 private:
 	glm::vec3 pos;

@@ -120,6 +120,14 @@ void Shader::setVec3(const std::string& name, glm::vec3 vec) const {
 		glUniform3f(location, vec.x, vec.y, vec.z);
 }
 
+void Shader::setVec2(const std::string& name, float x, float y) const {
+	int location = glGetUniformLocation(id, name.c_str());
+	if (location == -1)
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
+	else
+		glUniform2f(location, x, y);
+}
+
 void Shader::setMat4(const std::string& name, glm::mat4& mat4) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
