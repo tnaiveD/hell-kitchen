@@ -1,10 +1,6 @@
 #include <gl.h>
 #include <GLFW\glfw3.h>
 
-#include <assimp\Importer.hpp>
-#include <assimp\scene.h>
-#include <assimp\postprocess.h>
-
 #include <iostream>
 #include <windows.h>
 
@@ -190,7 +186,7 @@ int main() {
 	//point lights
 	const int m = 3;
 	glm::vec3 points[m] = {
-		glm::vec3(1.5f, -0.5f, 0.2f),
+		glm::vec3(1.5f, -0.1f, 0.2f),
 		glm::vec3(-1.5f, -0.5f, 0.5f),
 		glm::vec3(0.3f, 1.2f, -2.f),
 	};
@@ -344,11 +340,11 @@ int main() {
 			flT.Reset();
 
 		if (flFlicker) {
-			if (flT.Elapsed() == 500) {
+			if (flT.Elapsed() == 600 + r1) {
 				shader0.setBool("flashLight.isActive", false);
 				flActive = false;
 			}
-			if (flT.Elapsed() == 700) {
+			if (flT.Elapsed() == 900) {
 				shader0.setBool("flashLight.isActive", true);
 				flActive = true;
 			}
@@ -481,7 +477,7 @@ void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
 	float yOffset = yLast - yPos;
 	xLast = xPos;
 	yLast = yPos;
-	float sensitivity = 0.03f;
+	float sensitivity = 0.02f;
 	yaw += xOffset * sensitivity;
 	pitch += yOffset * sensitivity;
 

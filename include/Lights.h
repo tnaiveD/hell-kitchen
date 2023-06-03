@@ -19,6 +19,7 @@
 #define GREY_DARK_WARM .12f, .1f, .1f
 #define GREY_DARK_COLD .1f, .11f, .125f
 #define GREY_DARK_DARK .05f, .05f, .05f
+#define ORANGE 0.9f, 0.5f, 0.f
 
 
 //lamp 0.2 0.2 0.2, 0.5 0.5 0.5, 1.0 1.0 1.0
