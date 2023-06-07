@@ -13,11 +13,17 @@ using glm::vec2;
 using glm::vec3;
 using glm::mat4;
 
+#define MAX_BONE_INFLUENCE 4
+
 struct Vertex
 {
 	vec3 position;
 	vec2 normal;
 	vec2 texCoords;
+	vec3 tangent;
+	vec3 bitangent;
+	int boneIDs[MAX_BONE_INFLUENCE];
+	float weights[MAX_BONE_INFLUENCE];
 };
 
 struct Texture
@@ -36,12 +42,13 @@ public:
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
+	unsigned int VAO;
 
 	Mesh(vector<Vertex>, vector<unsigned int>, vector<Texture>);
 
 	void draw(Shader&);
+
 private:
-	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int EBO;
 

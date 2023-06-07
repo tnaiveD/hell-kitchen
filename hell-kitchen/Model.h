@@ -20,7 +20,7 @@ unsigned int texFromFile(const char*, const string&);
 class Model
 {
 public:
-	Model(const char*);
+	Model(const string&, bool);
 
 	void draw(Shader&);
 
@@ -31,6 +31,7 @@ private:
 	std::vector<Mesh> meshes;
 	string directory;
 	vector<Texture> texLoaded;
+	bool gammaCorrection;
 
 	void loadModel(string);
 

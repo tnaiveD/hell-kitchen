@@ -11,7 +11,7 @@ CamFPS::CamFPS() {
 
 CamFPS::CamFPS(glm::vec3 pos, glm::vec3 dir, glm::vec3 up) : CamFPS(){
 	this->pos = pos;
-	this->dir = dir;
+	this->dir = glm::normalize(dir);
 	this->up = up;
 	view = glm::lookAt(
 		this->pos,

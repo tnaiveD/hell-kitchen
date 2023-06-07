@@ -6,6 +6,8 @@
 ////////////////////////////////
 // Lights
 
+//colors
+//------------------------------
 #define RED 1.0f, 0.0f, 0.0f
 #define GREEN 0.0f, 1.0f, 0.0f
 #define BLUE 0.0f, 0.0f, 1.0f
@@ -21,12 +23,16 @@
 #define GREY_DARK_DARK .05f, .05f, .05f
 #define ORANGE 0.9f, 0.5f, 0.f
 
+//nature
+//-------------------------------
+#define SKY 0.2f, 0.5f, 0.9f
+
 
 //lamp 0.2 0.2 0.2, 0.5 0.5 0.5, 1.0 1.0 1.0
-//------------------------------------------
-const glm::vec3 LampAmbient(0.02f, 0.02f, 0.02f);
+//-------------------------------
+const glm::vec3 LampAmbient(0.3f, 0.3f, 0.3f);
 const glm::vec3 LampDiffuse(0.6f, 0.6f, 0.6f);
-const glm::vec3 LampSpecular(1.f, 1.f, 1.f);
+const glm::vec3 LampSpecular(0.8f, 0.8f, 0.8f);
 
 const glm::vec3 LightRed(1.0f, 0.0f, 0.0f);
 const glm::vec3 LightGreen(0.0f, 1.0f, 0.0f);

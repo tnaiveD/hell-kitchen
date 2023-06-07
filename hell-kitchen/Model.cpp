@@ -1,8 +1,8 @@
 #include "Model.h"
 
-Model::Model(const char* path)
+Model::Model(const string& path, bool gamma = false) : gammaCorrection(gamma)
 {
-
+	loadModel(path);
 }
 
 void Model::draw(Shader& shader)
@@ -16,7 +16,7 @@ void Model::draw(Shader& shader)
 void Model::loadModel(string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 	
 	/*
 	* - aiProcess_FlipUVs: set vertically flip UV y-axis.
@@ -111,6 +111,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "tex_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "tex_normal");
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+		vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "tex_height");
+		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	}
 
 	return Mesh(vertices, indices, textures);

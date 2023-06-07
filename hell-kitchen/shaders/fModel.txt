@@ -1,0 +1,163 @@
+#version 330 core
+
+in vec3 vFragPos;
+in vec3 vNorm;
+in vec2 vTex;
+
+out vec4 fColor;
+
+struct Material{
+
+	sampler2D tex_diffuse0;
+	sampler2D tex_diffuse1;
+	sampler2D tex_diffuse2;
+
+	sampler2D tex_specular0;
+	sampler2D tex_specular1;
+
+	sampler2D tex_normal0;
+	sampler2D tex_normal1;
+
+	sampler2D tex_height0;
+
+	sampler2D tex_emission0;
+
+	float shininess;
+};
+
+struct DirLight{
+	vec3 direction;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct PointLight{
+	vec3 position;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float constant;
+	float linear;
+	float quadr;
+};
+
+struct FlashLight{
+	vec3 direction;
+	vec3 position;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float constant;
+	float linear;
+	float quadr;
+
+	float inAngle;
+	float outAngle;
+
+	sampler2D cookie;
+
+	bool isActive;
+};
+
+
+
+//light funs
+//======================================
+vec3 calcDirLight(DirLight, vec3, vec3);
+vec3 calcPointLight(PointLight, vec3, vec3, vec3);
+vec3 calcFlashLight(FlashLight, vec3, vec3, vec3);
+
+
+uniform Material material;
+uniform PointLight pointLight;
+
+uniform vec3 fuViewDir;
+//uniform vec3 fuViewPos;
+uniform vec2 viewport;
+
+void main(){
+	vec3 color = vec3(0.0);
+	vec3 norm = normalize(vNorm);
+	color += calcPointLight(pointLight, norm, vFragPos, fuViewDir);
+	
+	fColor = vec4(color, 1.0);
+}
+
+vec3 calcDirLight(DirLight light, vec3 norm, vec3 viewDir){
+	vec3 lightDir = normalize(-light.direction);
+
+	vec3 ambient = light.ambient * vec3(texture(material.tex_diffuse0, vTex));
+
+	float diff = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.tex_diffuse0, vTex));
+	
+	vec3 reflectDir = reflect(-lightDir, norm);
+	float spec = pow(max(dot(reflectDir, viewDir), 0.0), material.shininess);
+	vec3 specular = light.specular * spec * vec3(texture(material.tex_specular0, vTex));
+
+	return ambient + diffuse + specular;
+}
+
+vec3 calcPointLight(PointLight light, vec3 norm, vec3 fragPos, vec3 viewDir){
+	vec3 lightDir = normalize(light.position - fragPos);
+
+	vec3 ambient = light.ambient * vec3(texture(material.tex_diffuse0, vTex));
+
+	float diff = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.tex_diffuse0, vTex));
+	
+	vec3 reflectDir = reflect(-lightDir, norm);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	vec3 specular = light.specular * spec * vec3(texture(material.tex_specular0, vTex));
+
+	float d = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * d + light.quadr * (d * d));
+
+	diffuse *= attenuation;
+	specular *= attenuation;
+
+	return (ambient + diffuse + specular);
+}
+
+vec3 calcFlashLight(FlashLight light, vec3 norm, vec3 fragPos, vec3 viewDir){
+	vec3 lightDir = normalize(light.position - fragPos);
+
+	float theta = dot(normalize(-light.direction), lightDir);
+	float e = light.inAngle - light.outAngle;
+	float intensity = clamp((theta - light.outAngle) / e, 0.0, 1.0);
+
+	if(theta > light.outAngle){
+		vec3 ambient = light.ambient * vec3(texture(material.tex_diffuse0, vTex));
+
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = light.diffuse * diff * vec3(texture(material.tex_diffuse0, vTex));
+	
+		vec3 reflectDir = reflect(-lightDir, norm);
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+		vec3 specular = light.specular * spec * vec3(texture(material.tex_specular0, vTex));
+
+		float d = length(light.position - fragPos);
+		float attenuation = 1.0 / (light.constant + light.linear * d + light.quadr * (d * d));
+		//analog
+		//float attenuation = smoothstep(0.0, 1.0, (theta - light.outAngle) / e);
+
+		diffuse *= intensity;
+		specular *= intensity;
+
+		diffuse *= attenuation;
+		specular *= attenuation;
+		
+		//cookie
+		vec2 winCoord = gl_FragCoord.xy / viewport;
+		float cookieAttenuation = length(vec3(texture(light.cookie, winCoord)));
+
+		return (diffuse * cookieAttenuation + specular * cookieAttenuation);
+	} else 
+		return light.ambient * vec3(texture(material.tex_diffuse0, vTex));
+}
