@@ -88,14 +88,17 @@ int main() {
 	////////////////////////////////////////
 	// Shaders
 
+	//default shader
+	Shader shader0("shaders\\vDefault.txt", "shaders\\fDefault.txt");
+
 	//object shader
 	//Shader shader0("shaders\\vLightObj.txt", "shaders\\fLightObj.txt");
 
 	//lightning shader
-	Shader shaderLight0("shaders\\vLightSrc.txt", "shaders\\fLightSrc.txt");
+	//Shader shaderLight0("shaders\\vLightSrc.txt", "shaders\\fLightSrc.txt");
 
 	//model shader
-	Shader shaderModel0("shaders\\vModel.txt","shaders\\fModel.txt");
+	//Shader shaderModel0("shaders\\vModel.txt","shaders\\fModel.txt");
 
 	////////////////////////////////////////
 	// Textures
@@ -104,6 +107,9 @@ int main() {
 	//unsigned int tex0Spec = loadTex("..\\img\\container1_spec.png");
 	//unsigned int tex0Emiss = loadTex("..\\img\\container1_emiss.png");
 	//unsigned int flCookie = loadTex("..\\img\\cookie.png");
+
+	unsigned int texMarble = loadTex("..\\img\\marble.jpg");
+	unsigned int texTile = loadTex("..\\img\\tile.jpg");
 
 	////////////////////////////////////////
 	// Data configuring
@@ -117,7 +123,7 @@ int main() {
 	};*/
 
 	//cube
-	float vertices1[] = {
+	float cube1vertices[] = {
 	//vertex			  //normal			   //tex
 	 -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
@@ -162,6 +168,62 @@ int main() {
 	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
+	//cube no normal
+	float cube2vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	//plane
+	float planeVertices[] = {
+		-5.f, -0.5f, 5.f, 0.f, 0.f,
+		5.f, -.5f, 5.f, 2.f, 0.f,
+		-5.f, -.5f, -5.f, 0.f, 2.f,
+
+		5.f, -.5f, 5.f, 2.f, 0.f,
+		5.f, -.5f, -5.f, 2.f, 2.f,
+		-5.f, -.5f, -5.f, 0.f, 2.f
+	};
+
 	//rotated cubes
 	/*const int n = 10;
 	glm::vec3 cubes[n] = {
@@ -191,37 +253,33 @@ int main() {
 		//glm::vec3(-1.5f, -0.5f, 0.5f),
 		//glm::vec3(0.3f, 1.2f, -2.f),
 	};
-	//if only one
-
-	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
+	
+	//cube data
+	unsigned int VBOcube, VAOcube;
+	glGenVertexArrays(1, &VAOcube);
+	glBindVertexArray(VAOcube);
+	glGenBuffers(1, &VBOcube);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOcube);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube2vertices), cube2vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 3));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 
-	////////////////////////////////////////
-	// Light source
-
-	unsigned int VAOl;
-	glGenVertexArrays(1, &VAOl);
-	glBindVertexArray(VAOl);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//plane data
+	unsigned int VBOplane, VAOplane;
+	glGenVertexArrays(1, &VAOplane);
+	glBindVertexArray(VAOplane);
+	glGenBuffers(1, &VBOplane);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOplane);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 
 	////////////////////////////////////////
 	// Pre-Render
-
-	glEnable(GL_DEPTH_TEST);
 	
 	glm::mat4 projection = glm::perspective(
 		glm::radians(45.0f),
@@ -230,18 +288,18 @@ int main() {
 		100.0f
 	);
 
-	Model asset("..\\assets\\backpack\\backpack.obj", false);
-	
+	//shader0 (Default)
+	//-----------------------------------
+	shader0.use();
+	shader0.setMat4("vuProjection", projection);
 
-	unsigned int tex1 = loadTex("..\\img\\frame.png");
+	//Model asset("..\\assets\\backpack\\backpack.obj", false);
+	//unsigned int tex1 = loadTex("..\\img\\frame.png");
 
 	//shaderModel0
 	//-----------------------------------
-
-	shaderModel0.use();
-
-	shaderModel0.setMat4("vuProjection", projection);
-
+	//shaderModel0.use();
+	//shaderModel0.setMat4("vuProjection", projection);
 	
 	//shader0
 	//-----------------------------------
@@ -262,9 +320,9 @@ int main() {
 	////shader0.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
 
 	//point lights init
-	Shader& sh = shaderModel0; //specify required shader unit
-	sh.use();
-	if(m > 1)
+	//Shader& sh = shaderModel0; //specify required shader unit
+	//sh.use();
+	/*if(m > 1)
 	{
 		for (int i = 0; i < m; i++) {
 			std::string name = "pointLights[" + std::to_string(i) + "]";
@@ -289,7 +347,7 @@ int main() {
 			sh.setFloat(name + ".constant", 1.0f);
 			sh.setFloat(name + ".linear", 0.09f);
 			sh.setFloat(name + ".quadr", 0.032f);
-		}
+		}*/
 
 	////flashlight
 	//shader0.setVec3("flashLight.ambient", LampAmbient);
@@ -301,26 +359,28 @@ int main() {
 	//shader0.setInt("flashLight.cookie", 3);
 	//shader0.setFloat("flashLight.inAngle", glm::cos(glm::radians(12.f)));
 	//shader0.setFloat("flashLight.outAngle", glm::cos(glm::radians(16.f)));
-
+	// 
 	//shader0.setVec2("viewPort", SCR_WIDTH, SCR_HEIGHT);
-
-	//Timer t(true);
-	//Timer flT(0);
 
 	//shaderLight0
 	//------------------------------------
-	shaderLight0.use();
-	shaderLight0.setMat4("vuPerspective", projection);
-
+	//shaderLight0.use();
+	//shaderLight0.setMat4("vuPerspective", projection);
+	
+	glActiveTexture(GL_TEXTURE0);
 
 	////////////////////////////////////////
 	// RENDER
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthMask(GL_FALSE);
+	//glDepthFunc(GL_ALWAYS);
+
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		////////////////////////////////////
-		glClearColor(SKY, 1.0f);
+		glClearColor(GREY_DARK_WARM, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		////////////////////////////////////
 		float time = glfwGetTime();
@@ -333,164 +393,43 @@ int main() {
 		////////////////////////////////////
 		// Camera
 
-		glm::mat4 camView = cam.getView();
 		glm::vec3 camPos = cam.getPos();
 		glm::vec3 camDir = cam.getDir();
 
 		////////////////////////////////////
 		// Light settings
 
-		//rotated pointlight
-		float e = rand() % 10 / 10;
-		lightPos.x = cos((time + 4 + e) * 2) * 3.f;
-		lightPos.y = sin(time + 4 + e) / 2 * 2;
-		//lightPos.z = sin((time + 4 + e) * 2) * 3.f;
-		lightPos.z = 2.f;
+		////////////////////////////////////
+		// ShaderDefault
+
+		shader0.use();
+		shader0.setMat4("vuView", cam.getView());
+
+		//cubes
+		glm::mat4 model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
+		shader0.setMat4("vuModel", model);
+
+		glBindTexture(GL_TEXTURE_2D, texMarble);
+		glBindVertexArray(VAOcube);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
-		////////////////////////////////////
-		// ShaderModel0
-
-		shaderModel0.use();
-
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
-		shaderModel0.setMat4("vuModel", model);
-		shaderModel0.setMat4("vuView", camView);
-
-		shaderModel0.setVec3("pointLight.position", lightPos);
-		shaderModel0.setVec3("fuViewDir", camDir);
-		//shaderModel0.setVec3("fuViewPos", camPos);
-
-		asset.draw(shaderModel0);
-
-		////////////////////////////////////
-		// Shader0 (Scene)
-
-		//shader0.use();
-
-		//light updading
-		//----------------------------------
-
-		//flashlight
-		/*shader0.setVec3("flashLight.position", camPos);
-		shader0.setVec3("flashLight.direction", camDir);
-
-		shader0.setBool("flashLight.isActive", flActive);
-
-		float r1 = rand() % 100 + 50, r2 = rand() % 200 + 100;
-		if (t.Elapsed() > (rand() % 3000 + 8000)) {
-			if (!flFlicker) {
-				flFlicker = true;
-				flT.start();
-			}
-		}
-		if (!flFlicker)
-			flT.Reset();
-
-		if (flFlicker) {
-			if (flT.Elapsed() == 600 + r1) {
-				shader0.setBool("flashLight.isActive", false);
-				flActive = false;
-			}
-			if (flT.Elapsed() == 900) {
-				shader0.setBool("flashLight.isActive", true);
-				flActive = true;
-			}
-			if (flT.Elapsed() == 1400) {
-				shader0.setBool("flashLight.isActive", false);
-				flActive = false;
-			}
-			if (flT.Elapsed() == 1470 + r1) {
-				shader0.setBool("flashLight.isActive", true);
-				flActive = true;
-			}
-			if (flT.Elapsed() == 1500 + r2) {
-				shader0.setBool("flashLight.isActive", false);
-				flActive = false;
-			}
-			if (flT.Elapsed() == 1650 + r1) {
-				shader0.setBool("flashLight.isActive", true);
-				flActive = true;
-			}
-			if (flT.Elapsed() > 1900) {
-				shader0.setBool("flashLight.isActive", false);
-				if (rand() % 2 == 0)
-					flActive = false;
-				else
-					flActive = true;
-				flFlicker = false;
-				flT.end();
-				t.end();
-			}
-		}*/
-
-		//----------------------------------
-	
-		//shader0.setVec3("fuViewPos", cam.getPos());
-
-		//shader0.setMat4("vuView", camView);
-
-		//glm::mat4 model = glm::mat4(1.0f);
-		////model = glm::rotate(model, glm::radians((float)glfwGetTime()) * 50, glm::vec3(1.0f, 0.5f, 0.0f));
-		////shader0.setMat4("vuModel", model);
-		//
-		//shader0.setFloat("fuTime", time * 1.5f);
-
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, tex0);
-
-		//glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, tex0Spec);
-
-		//glActiveTexture(GL_TEXTURE2);
-		//glBindTexture(GL_TEXTURE_2D, tex0Emiss);
-
-		//glActiveTexture(GL_TEXTURE3);
-		//glBindTexture(GL_TEXTURE_2D, flCookie);
-
-		//glBindVertexArray(VAO);
-		////glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		//rotated cubes
-		/*for (int i = 0; i < n; i++) {
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubes[i]);
-			model = glm::translate(model, glm::vec3(0.0f, static_cast<float>(sin(glfwGetTime() * random[i] * 0.25f) * 0.25f), 0.0f));
-			model = glm::rotate(model, glm::radians((float)time * (i + 1)) * 8, glm::vec3(1.0f, 0.5f, 0.2f));
-			shader0.setMat4("vuModel", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}*/
-
-		////////////////////////////////////
-		// ShaderLight0 (Light source)
-
-		shaderLight0.use();
-		shaderLight0.setMat4("vuView", camView);
-		
-		//1 moving light source
-		model = glm::mat4(1.0);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.8f));
-		shaderLight0.setMat4("vuModel", model);
-
-		//few light sources
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex1);
-
-		//shaderLight0.setInt("frame", 3);
-		glBindVertexArray(VAOl);
-
-		/*for (int i = 0; i < m; i++) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, points[i]);
-			model = glm::scale(model, glm::vec3(0.2f));
-			shaderLight0.setMat4("vuModel", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}*/
-
-		shaderLight0.setMat4("vuModel", model);
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(2.f, 0.f, 0.f));
+		shader0.setMat4("vuModel", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		//plane 
+		model = glm::mat4(1.f);
+		
+		shader0.setMat4("vuModel", model);
+		
+		glBindTexture(GL_TEXTURE_2D, texTile);
+		glBindVertexArray(VAOplane);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		
+		////////////////////////////////////
 		glBindVertexArray(0);
 		////////////////////////////////////
 		glfwSwapBuffers(window);
@@ -500,13 +439,12 @@ int main() {
 	////////////////////////////////////////
 	// Memory dealloc
 
-	glDeleteBuffers(1, &VBO);
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteVertexArrays(1, &VAOl);
+	glDeleteBuffers(1, &VBOcube);
+	glDeleteBuffers(1, &VBOplane);
+	glDeleteVertexArrays(1, &VAOcube);
+	glDeleteVertexArrays(1, &VAOplane);
 
-	//shader0.suicide();
-	shaderLight0.suicide();
-	shaderModel0.suicide();
+	shader0.suicide();
 
 	glfwTerminate();
 	system("pause");

@@ -82,5 +82,17 @@
     <Text Include="shaders\vLightSrc.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
+    <Text Include="shaders\fModel.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vModel.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vDefault.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\fDefault.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
 </Project>
