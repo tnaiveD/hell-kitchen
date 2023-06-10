@@ -79,8 +79,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\Project\hell-kitchen\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Project\hell-kitchen\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Project\itsoctv\hell-kitchen\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Project\itsoctv\hell-kitchen\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -166,8 +166,10 @@
   <ItemGroup>
     <Text Include="shaders\fLightObj.txt" />
     <Text Include="shaders\fLightSrc.txt" />
+    <Text Include="shaders\fModel.txt" />
     <Text Include="shaders\vLightObj.txt" />
     <Text Include="shaders\vLightSrc.txt" />
+    <Text Include="shaders\vModel.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
