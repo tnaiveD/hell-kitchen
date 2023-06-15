@@ -1,0 +1,14 @@
+#version 330 core
+
+layout(location = 0) in vec3 inPos;
+
+out vec3 vPos;
+
+uniform mat4 vuProjection;
+uniform mat4 vuView;
+
+void main(){
+	vPos = inPos;
+	vec4 pos = vuProjection * vuView * vec4(inPos, 1.0);
+	gl_Position = pos.xyww;
+}

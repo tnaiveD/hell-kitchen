@@ -164,12 +164,22 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="shaders\fDefault.txt" />
+    <Text Include="shaders\fEmpty.txt" />
     <Text Include="shaders\fLightObj.txt" />
     <Text Include="shaders\fLightSrc.txt" />
     <Text Include="shaders\fModel.txt" />
+    <Text Include="shaders\fSingleColor.txt" />
+    <Text Include="shaders\fSkybox.txt" />
+    <Text Include="shaders\fTransp.txt" />
+    <Text Include="shaders\vDefault.txt" />
+    <Text Include="shaders\vEmpty.txt" />
     <Text Include="shaders\vLightObj.txt" />
     <Text Include="shaders\vLightSrc.txt" />
     <Text Include="shaders\vModel.txt" />
+    <Text Include="shaders\vSingleColor.txt" />
+    <Text Include="shaders\vSkybox.txt" />
+    <Text Include="shaders\vTransp.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

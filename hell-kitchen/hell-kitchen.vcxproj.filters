@@ -88,5 +88,35 @@
     <Text Include="shaders\vModel.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
+    <Text Include="shaders\fDefault.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vDefault.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vSingleColor.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\fSingleColor.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\fTransp.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vTransp.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\fEmpty.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vEmpty.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\fSkybox.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="shaders\vSkybox.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
 </Project>
