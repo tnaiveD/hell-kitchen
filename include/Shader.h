@@ -13,14 +13,13 @@
 
 class Shader {
 public:
-	unsigned int id;
-
-	Shader();
-	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
+	Shader() = delete;
+	Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
 	
+	//activate
 	void use();
 	
-	//utility uniform setters
+	//set uniform
 	void setBool(const std::string&, bool) const;
 	void setInt(const std::string&, int) const;
 	void setFloat(const std::string&, float) const;
@@ -29,7 +28,13 @@ public:
 	void setVec2(const std::string&, float, float) const;
 	void setMat4(const std::string&, glm::mat4&) const;
 
+	//get
+	unsigned int getID() const;
+
+	//clearing
 	void suicide();
+private:
+	unsigned int id;
 };
 
 #endif

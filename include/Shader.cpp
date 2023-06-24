@@ -1,7 +1,5 @@
 #include "Shader.h"
 
-Shader::Shader() {};
-
 Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	
 	//Read shader source from files
@@ -36,7 +34,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	const char* fragmentShaderSource = fragmentSource.c_str();
 
 	//Compiling shaders
-	//-----------------------
+	//------------------------------
 	int success;
 	char infoLog[512];
 
@@ -50,7 +48,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 		std::cout << "Error: SHADER_CPP. Vertex Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
-	//color
+	//fragment
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
@@ -135,6 +133,8 @@ void Shader::setMat4(const std::string& name, glm::mat4& mat4) const{
 	else
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat4));
 }
+
+unsigned int Shader::getID() const { return id; }
 
 void Shader::suicide() {
 	glDeleteProgram(id);

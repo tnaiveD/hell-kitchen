@@ -145,11 +145,11 @@
   <ItemGroup>
     <ClCompile Include="..\include\CamFPS.cpp" />
     <ClCompile Include="..\include\gl.c" />
+    <ClCompile Include="..\include\Mesh.cpp" />
+    <ClCompile Include="..\include\Model.cpp" />
     <ClCompile Include="..\include\Shader.cpp" />
     <ClCompile Include="..\include\stb_image.cpp" />
     <ClCompile Include="MAIN.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CamFPS.h" />
@@ -157,29 +157,24 @@
     <ClInclude Include="..\include\GLFW\glfw3.h" />
     <ClInclude Include="..\include\Lights.h" />
     <ClInclude Include="..\include\Materials.h" />
+    <ClInclude Include="..\include\Mesh.h" />
+    <ClInclude Include="..\include\Model.h" />
     <ClInclude Include="..\include\Shader.h" />
     <ClInclude Include="..\include\stb_image.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="..\include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="shaders\fDefaultTmp.txt" />
     <Text Include="shaders\fDefault.txt" />
-    <Text Include="shaders\fEmpty.txt" />
-    <Text Include="shaders\fLightObj.txt" />
-    <Text Include="shaders\fLightSrc.txt" />
-    <Text Include="shaders\fModel.txt" />
+    <Text Include="shaders\fPostprocess.txt" />
     <Text Include="shaders\fSingleColor.txt" />
     <Text Include="shaders\fSkybox.txt" />
     <Text Include="shaders\fTransp.txt" />
+    <Text Include="shaders\vDefaultTmp.txt" />
     <Text Include="shaders\vDefault.txt" />
-    <Text Include="shaders\vEmpty.txt" />
-    <Text Include="shaders\vLightObj.txt" />
-    <Text Include="shaders\vLightSrc.txt" />
-    <Text Include="shaders\vModel.txt" />
+    <Text Include="shaders\vPostprocess.txt" />
     <Text Include="shaders\vSingleColor.txt" />
     <Text Include="shaders\vSkybox.txt" />
-    <Text Include="shaders\vTransp.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

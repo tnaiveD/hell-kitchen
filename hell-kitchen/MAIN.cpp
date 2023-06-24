@@ -17,6 +17,8 @@
 #define SCR_WIDTH 1000
 #define SCR_HEIGHT 800
 
+#define HK_POSTPROCESS false
+
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void cursor_pos_callback(GLFWwindow*, double, double);
 void key_callback(GLFWwindow*, int, int, int, int);
@@ -26,6 +28,8 @@ unsigned int loadTex(const char*, GLenum);
 unsigned int loadCubemap(std::string, std::vector<std::string>);
 
 using std::cout;
+
+
 
 /////////////////////////////////////////
 // Camera
@@ -57,8 +61,8 @@ float flTimer = 0.f;
 
 int main() {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	GLFWwindow* window = glfwCreateWindow(
 		SCR_WIDTH, SCR_HEIGHT,
@@ -182,13 +186,13 @@ int main() {
 
 	//plane
 	const float planeVertices[] = {
-		-15.f, -0.502f, 15.f, 0.f, 0.f,
-		15.f, -.502f, 15.f, 2.f, 0.f,
-		-15.f, -.502f, -15.f, 0.f, 2.f,
+		-25.f, -0.502f, 25.f, 0.f, 0.f,
+		25.f, -.502f, 25.f, 25.f, 0.f,
+		-25.f, -.502f, -25.f, 0.f, 25.f,
 
-		15.f, -.502f, 15.f, 2.f, 0.f,
-		15.f, -.502f, -15.f, 2.f, 2.f,
-		-15.f, -.502f, -15.f, 0.f, 2.f
+		25.f, -.502f, 25.f, 25.f, 0.f,
+		25.f, -.502f, -25.f, 25.f, 25.f,
+		-25.f, -.502f, -25.f, 0.f, 25.f
 	};
 
 	//grass
@@ -341,6 +345,7 @@ int main() {
 
 	//framebuffers (and renderbuffers)
 	//---------------------------------------
+
 	unsigned int FBO0;
 	glGenFramebuffers(1, &FBO0);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
@@ -378,20 +383,23 @@ int main() {
 	// Shaders
 
 	//default shaders
-	Shader shader0("shaders\\vDefault.txt", "shaders\\fDefault.txt");
+	Shader shader0("shaders\\vDefaultTmp.txt", "shaders\\fDefaultTmp.txt");
 	Shader shader0Stencil("shaders\\vSingleColor.txt", "shaders\\fSingleColor.txt");
-	Shader shaderTransp("shaders\\vDefault.txt", "shaders\\fTransp.txt");
-	Shader shaderScreen("shaders\\vEmpty.txt", "shaders\\fEmpty.txt");
+	Shader shaderTransp("shaders\\vDefaultTmp.txt", "shaders\\fTransp.txt");
+	Shader shaderScreen("shaders\\vPostprocess.txt", "shaders\\fPostprocess.txt");
 	Shader shaderSkybox("shaders\\vSkybox.txt", "shaders\\fSkybox.txt");
+	Shader shaderModel0("shaders\\vLight.txt","shaders\\fLight.txt");
 
-	//object shader
-	//Shader shader0("shaders\\vLightObj.txt", "shaders\\fLightObj.txt");
+	//uniform blocks
+	//--------------------------------------
+	unsigned int UBOmat;
+	glGenBuffers(1, &UBOmat);
 
-	//lightning shader
-	//Shader shaderLight0("shaders\\vLightSrc.txt", "shaders\\fLightSrc.txt");
+	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	//model shader
-	//Shader shaderModel0("shaders\\vModel.txt","shaders\\fModel.txt");
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBOmat, 0, sizeof(glm::mat4) * 2);
 
 	////////////////////////////////////////
 	// Textures
@@ -407,6 +415,11 @@ int main() {
 	unsigned int texSkybox = loadCubemap("..\\img\\sky0", skyboxFaces);
 
 	////////////////////////////////////////
+	// Assets
+
+	//Model tree0("..\\assets\\backpack\\Backpack.obj", false);
+
+	////////////////////////////////////////
 	// Pre-Render
 	
 	glm::mat4 projection = glm::perspective(
@@ -416,10 +429,16 @@ int main() {
 		100.0f
 	);
 
+	//shader blocks
+	//-----------------------------------
+	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(projection), &projection[0]);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
 	//shader0 (Default)
 	//-----------------------------------
 	shader0.use();
-	shader0.setMat4("vuProjection", projection);
 
 	//shader0Stencil
 	//-----------------------------------
@@ -429,18 +448,16 @@ int main() {
 	//shaderTransp
 	//-----------------------------------
 	shaderTransp.use();
-	shaderTransp.setMat4("vuProjection", projection);
-
-	//shaderScreen
-	//-----------------------------------
-	shaderScreen.use();
-	shaderScreen.setInt("screenTex", 0);
 
 	//shaderSkybox
 	//-----------------------------------
 	shaderSkybox.use();
-	shaderSkybox.setMat4("vuProjection", projection);
 	shaderSkybox.setInt("skyboxTex", 0);
+
+	//shaderModel0
+	//-----------------------------------
+	shaderModel0.use();
+	shaderModel0.setMat4("vuProjection", projection);
 
 	////////////////////////////////////////
 	// RENDER
@@ -461,16 +478,18 @@ int main() {
 
 	//blend
 	//-----------------------------------
-	//glEnable(GL_BLEND);
+	glEnable(GL_BLEND);
 	
+	glEnable(GL_PROGRAM_POINT_SIZE);
+
 	//render cycle
 	//-----------------------------------
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 
 		////////////////////////////////////
-		// Set buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
+		// Frames
+		if(HK_POSTPROCESS) glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
 		
 		//states
 		glEnable(GL_DEPTH_TEST);
@@ -493,13 +512,19 @@ int main() {
 		glm::mat4 camView = cam.getView();
 
 		////////////////////////////////////
+		// Shader blocks
+
+		glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(projection), sizeof(camView), &camView[0]);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		////////////////////////////////////
 		// Drawing
 
 		glm::mat4 model = glm::mat4(1.f);
 
 		//plane
 		shader0.use();
-		shader0.setMat4("vuView", camView);
 
 		model = glm::mat4(1.f);
 		shader0.setMat4("vuModel", model);
@@ -509,7 +534,6 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//cubes
-
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
 		shader0.setMat4("vuModel", model);
@@ -525,7 +549,6 @@ int main() {
 
 		//grass
 		shaderTransp.use();
-		shaderTransp.setMat4("vuView", camView);
 
 		glBindVertexArray(VAOgrass);
 		glActiveTexture(GL_TEXTURE0);
@@ -543,8 +566,6 @@ int main() {
 		//glDepthMask(GL_FALSE);
 
 		shaderSkybox.use();
-		glm::mat4 skyView = glm::mat4(glm::mat3(camView));
-		shaderSkybox.setMat4("vuView", skyView);
 
 		glBindVertexArray(VAOskybox);
 		glActiveTexture(GL_TEXTURE0);
@@ -556,23 +577,25 @@ int main() {
 
 		//postprocess
 		//--------------------------
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST);
+		if (HK_POSTPROCESS)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDisable(GL_DEPTH_TEST);
 
-		glClearColor(WHITE, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+			glClearColor(WHITE, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
 
-		shaderScreen.use();
-		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, FBOtex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+			shaderScreen.use();
+			glBindVertexArray(quadVAO);
+			glBindTexture(GL_TEXTURE_2D, FBOtex);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		glEnable(GL_DEPTH_TEST);
-
-		//
-		glBindVertexArray(0);
+			glEnable(GL_DEPTH_TEST);
+		}
+		
 
 		////////////////////////////////////
+		glBindVertexArray(0);
 
 		////////////////////////////////////
 		glfwSwapBuffers(window);
@@ -596,8 +619,11 @@ int main() {
 	glDeleteFramebuffers(1, &FBO0);
 	glDeleteRenderbuffers(1, &RBO);
 
+	glDeleteBuffers(1, &UBOmat);
+
 	shader0.suicide();
 	shader0Stencil.suicide();
+	shaderModel0.suicide();
 
 	glfwTerminate();
 	system("pause");
