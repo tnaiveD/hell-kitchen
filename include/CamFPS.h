@@ -23,6 +23,7 @@ public:
 	void moveBack();
 	void moveRight();
 	void moveLeft();
+	void moveDir(glm::vec3);
 
 	glm::mat4& getView();
 	float getSpeed() const;

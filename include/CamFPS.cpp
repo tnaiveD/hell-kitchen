@@ -9,7 +9,7 @@ CamFPS::CamFPS() {
 	deltaTime = 0.0f;
 }
 
-CamFPS::CamFPS(glm::vec3 pos, glm::vec3 dir, glm::vec3 up) : CamFPS(){
+CamFPS::CamFPS(glm::vec3 pos, glm::vec3 dir, glm::vec3 up) : CamFPS() {
 	this->pos = pos;
 	this->dir = glm::normalize(dir);
 	this->up = up;
@@ -69,6 +69,15 @@ void CamFPS::setPosZ(float val) {
 
 void CamFPS::setDir(glm::vec3 dir) {
 	this->dir = dir;
+	view = glm::lookAt(
+		pos,
+		pos + this->dir,
+		up
+	);
+}
+
+void CamFPS::moveDir(glm::vec3 dir) {
+	this->dir += dir;
 	view = glm::lookAt(
 		pos,
 		pos + this->dir,
