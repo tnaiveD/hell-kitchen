@@ -14,7 +14,7 @@ using milliseconds = std::chrono::milliseconds;
         high_resolution_clock::time_point _end;
         milliseconds time;
     public:
-        explicit Timer(bool run = false) : time(0)
+        explicit Timer(bool run = false)
         {
             if (run)
                 Reset();

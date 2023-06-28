@@ -16,7 +16,8 @@ void Model::draw(Shader& shader)
 void Model::loadModel(string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	const aiScene* scene = importer.ReadFile(path,
+		aiProcess_Triangulate);
 	
 	/*
 	* - aiProcess_FlipUVs: set vertically flip UV y-axis.
@@ -159,7 +160,7 @@ unsigned int texFromFile(const char* path, const string& directory)
 	glGenTextures(1, &id);
 	int imgW, imgH, imgCh;
 	unsigned char* imgData = stbi_load(full_path.c_str(), &imgW, &imgH, &imgCh, 0);
-	//stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(true);
 	if (imgData) {
 		GLenum format = 0;
 		if (imgCh == 1) format = GL_RED;
@@ -170,13 +171,13 @@ unsigned int texFromFile(const char* path, const string& directory)
 		glTexImage2D(GL_TEXTURE_2D, 0, format, imgW, imgH, 0, format, GL_UNSIGNED_BYTE, imgData);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //GL_REPEAT
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //GL_CLAMP_TO_EDGE
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); //GL_LINEAR_MIPMAP_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //GL_LINEAR
 	}
 	else
-		std::cout << "Warning: MODEL_H. Texture not loaded. Path: \"" << path << "\"\n";
+		std::cout << "Warning: MODEL_H. Texture not loaded\n";
 	stbi_image_free(imgData);
 
 	return id;

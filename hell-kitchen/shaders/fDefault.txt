@@ -1,0 +1,14 @@
+#version 330 core
+
+in vec2 vTex;
+
+out vec4 fColor;
+
+uniform sampler2D tex;
+
+void main(){	
+	fColor = texture(tex, vTex);
+	
+	//float depth = linearizeDepth(gl_FragCoord.z) / far;
+	//fColor = vec4(vec3(depth), 1.0);
+}

@@ -1,14 +1,14 @@
 #include "Shader.h"
 
 Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
-
+	
 	//Read shader source from files
 	//------------------------------
 	std::string vertexSource;
 	std::string fragmentSource;
 	std::ifstream vertexIfStream;
 	std::ifstream fragmentIfStream;
-
+	
 	//exceptions
 	vertexIfStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fragmentIfStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -45,8 +45,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertexShader, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", " 
-				  << fragmentSourcePath << "). Vertex Shader compilation FAILED\n" << infoLog << '\n';
+		std::cout << "Error: SHADER_CPP. Vertex Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
 	//fragment
@@ -56,8 +55,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragmentShader, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
-			<< fragmentSourcePath << "). Fragment Shader compilation FAILED\n" << infoLog << '\n';
+		std::cout << "Error: SHADER_CPP. Fragment Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
 	//shader program
@@ -68,19 +66,12 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(id, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
-			<< fragmentSourcePath << "). Shader Program linking FAILED\n" << infoLog << '\n';
+		std::cout << "Error: SHADER_CPP. Shader Program linking FAILED\n" << infoLog << '\n';
 	}
 
-	//clear
+	//clearing
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-
-	//uniforms check
-	this->infoLog += std::string(vertexSourcePath) + std::string(", ") +
-					 std::string(fragmentSourcePath) + std::string(": \n");
-
-	wrongUniforms.clear();
 }
 
 void Shader::use() {
@@ -90,13 +81,7 @@ void Shader::use() {
 void Shader::setBool(const std::string& name, bool val) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform1i(location, val);
 }
@@ -104,13 +89,7 @@ void Shader::setBool(const std::string& name, bool val) const{
 void Shader::setInt(const std::string& name, int val) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform1i(location, val);
 }
@@ -118,13 +97,7 @@ void Shader::setInt(const std::string& name, int val) const{
 void Shader::setFloat(const std::string& name, float val) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform1f(location, val);
 }
@@ -132,13 +105,7 @@ void Shader::setFloat(const std::string& name, float val) const{
 void Shader::setVec3(const std::string& name, float x, float y, float z) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform3f(location, x, y, z);
 }
@@ -146,42 +113,23 @@ void Shader::setVec3(const std::string& name, float x, float y, float z) const{
 void Shader::setVec3(const std::string& name, glm::vec3 vec) const {
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform3f(location, vec.x, vec.y, vec.z);
 }
 
 void Shader::setVec2(const std::string& name, float x, float y) const {
 	int location = glGetUniformLocation(id, name.c_str());
-	
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniform2f(location, x, y);
 }
 
-void Shader::setMat4(const std::string& name, glm::mat4& mat4) const {
+void Shader::setMat4(const std::string& name, glm::mat4& mat4) const{
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
-	{
-		if (wrongUniforms.find(name) == wrongUniforms.end())
-		{
-			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
-			wrongUniforms.insert(name);
-		}
-	}
+		std::cout << "Error: SHADER_CPP. Uniform \"" << name << "\" does not exist?\n";
 	else
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat4));
 }
@@ -191,19 +139,3 @@ unsigned int Shader::getID() const { return id; }
 void Shader::suicide() {
 	glDeleteProgram(id);
 }
-
-////////////////////////////////
-// Debug
-
-std::string Shader::getInfoLog() const
-{
-	if (wrongUniforms.empty())
-	{
-		return std::string(infoLog + "OK!\n");
-	}
-	else
-	{
-		return infoLog;
-	}
-}
-

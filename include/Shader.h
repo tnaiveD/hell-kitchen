@@ -10,18 +10,16 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <set>
 
 class Shader {
 public:
-	unsigned int id;
-
 	Shader() = delete;
-	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
+	Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
 	
+	//activate
 	void use();
 	
-	//set uniforms
+	//set uniform
 	void setBool(const std::string&, bool) const;
 	void setInt(const std::string&, int) const;
 	void setFloat(const std::string&, float) const;
@@ -33,16 +31,10 @@ public:
 	//get
 	unsigned int getID() const;
 
-	//debug
-	std::string getInfoLog() const;
-
-	//dealloc
+	//clearing
 	void suicide();
 private:
-	
-	//debug
-	mutable std::string infoLog;
-	mutable std::set<std::string> wrongUniforms;
+	unsigned int id;
 };
 
 #endif
