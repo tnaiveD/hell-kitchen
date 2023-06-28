@@ -1,3 +1,5 @@
+//v0.0.0
+
 #include <gl.h>
 #include <GLFW\glfw3.h>
 
@@ -9,7 +11,7 @@
 #include "Shader.h"
 #include "CamFPS.h"
 #include "Materials.h"
-#include "Lights.h"
+#include "Light.h"
 #include "Timer.h"
 #include "Model.h"
 
@@ -27,23 +29,26 @@ void processInput(GLFWwindow*);
 unsigned int loadTex(const char*, GLenum);
 unsigned int loadCubemap(std::string, std::vector<std::string>);
 
-using std::cout;
+void shadersLogs(const std::vector<Shader*>&);
 
+using std::cout;
 
 
 /////////////////////////////////////////
 // Camera
 
-CamFPS cam(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
+CamFPS cam(glm::vec3(0.0f, 1.0f, 7.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 //delta time
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
 
 //mouse view
-float xLast = 0.0f, yLast = 0.0f;
+float xLast = SCR_WIDTH / 2;
+float yLast = SCR_HEIGHT / 2;
 float yaw = -90.0f;
-float pitch = 0.0f;
+float pitch = 0.f;
+
 bool firstCursor = true;
 
 /////////////////////////////////////////
@@ -186,13 +191,13 @@ int main() {
 
 	//plane
 	const float planeVertices[] = {
-		-25.f, -0.502f, 25.f, 0.f, 0.f,
-		25.f, -.502f, 25.f, 25.f, 0.f,
-		-25.f, -.502f, -25.f, 0.f, 25.f,
+		-4.f, -0.502f, 4.f, 0.f, 0.f,
+		4.f, -.502f, 4.f, 4.f, 0.f,
+		-4.f, -.502f, -4.f, 0.f, 4.f,
 
-		25.f, -.502f, 25.f, 25.f, 0.f,
-		25.f, -.502f, -25.f, 25.f, 25.f,
-		-25.f, -.502f, -25.f, 0.f, 25.f
+		4.f, -.502f, 4.f, 4.f, 0.f,
+		4.f, -.502f, -4.f, 4.f, 4.f,
+		-4.f, -.502f, -4.f, 0.f, 4.f
 	};
 
 	//grass
@@ -380,28 +385,6 @@ int main() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	////////////////////////////////////////
-	// Shaders
-
-	//default shaders
-	Shader shader0("shaders\\vDefaultTmp.txt", "shaders\\fDefaultTmp.txt");
-	Shader shader0Stencil("shaders\\vSingleColor.txt", "shaders\\fSingleColor.txt");
-	Shader shaderTransp("shaders\\vDefaultTmp.txt", "shaders\\fTransp.txt");
-	Shader shaderScreen("shaders\\vPostprocess.txt", "shaders\\fPostprocess.txt");
-	Shader shaderSkybox("shaders\\vSkybox.txt", "shaders\\fSkybox.txt");
-	Shader shaderModel0("shaders\\vLight.txt","shaders\\fLight.txt");
-
-	//uniform blocks
-	//--------------------------------------
-	unsigned int UBOmat;
-	glGenBuffers(1, &UBOmat);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBOmat, 0, sizeof(glm::mat4) * 2);
-
-	////////////////////////////////////////
 	// Textures
 
 	//unsigned int tex0 = loadTex("..\\img\\container1.png");
@@ -409,7 +392,7 @@ int main() {
 	//unsigned int tex0Emiss = loadTex("..\\img\\container1_emiss.png");
 	//unsigned int flCookie = loadTex("..\\img\\cookie.png");
 
-	unsigned int texMarble = loadTex("..\\img\\container.jpg", GL_REPEAT);
+	unsigned int texMarble = loadTex("..\\img\\container1.png", GL_REPEAT);
 	unsigned int texTile = loadTex("..\\img\\tile.jpg", GL_REPEAT);
 	unsigned int texGrass = loadTex("..\\img\\grass.png", GL_CLAMP_TO_EDGE);
 	unsigned int texSkybox = loadCubemap("..\\img\\sky0", skyboxFaces);
@@ -420,8 +403,35 @@ int main() {
 	//Model tree0("..\\assets\\backpack\\Backpack.obj", false);
 
 	////////////////////////////////////////
-	// Pre-Render
-	
+	// Shaders
+
+	//default shaders
+	Shader shader0("..\\shaders\\vDefault.txt", "..\\shaders\\fDefault.txt");
+	Shader shader0Stencil("..\\shaders\\vSingleColor.txt", "..\\shaders\\fSingleColor.txt");
+	Shader shaderTransp("..\\shaders\\vDefault.txt", "..\\shaders\\fTransp.txt");
+	Shader shaderScreen("..\\shaders\\vPostprocess.txt", "..\\shaders\\fPostprocess.txt");
+	Shader shaderSkybox("..\\shaders\\vSkybox.txt", "..\\shaders\\fSkybox.txt");
+	Shader shaderModel0("..\\shaders\\vLights.txt", "..\\shaders\\fLights.txt");
+
+	std::vector<Shader*> shaders;
+	shaders.push_back(&shader0);
+	shaders.push_back(&shader0Stencil);
+	shaders.push_back(&shaderTransp);
+	shaders.push_back(&shaderScreen);
+	shaders.push_back(&shaderSkybox);
+	shaders.push_back(&shaderModel0);
+
+	//interface blocks
+	//--------------------------------------
+	unsigned int UBOmat;
+	glGenBuffers(1, &UBOmat);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBOmat, 0, sizeof(glm::mat4) * 2);
+
 	glm::mat4 projection = glm::perspective(
 		glm::radians(45.0f),
 		static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT),
@@ -429,7 +439,7 @@ int main() {
 		100.0f
 	);
 
-	//shader blocks
+	//inteface blocks data init
 	//-----------------------------------
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(projection), &projection[0]);
@@ -443,7 +453,6 @@ int main() {
 	//shader0Stencil
 	//-----------------------------------
 	shader0Stencil.use();
-	shader0Stencil.setMat4("vuProjection", projection);
 
 	//shaderTransp
 	//-----------------------------------
@@ -454,22 +463,15 @@ int main() {
 	shaderSkybox.use();
 	shaderSkybox.setInt("skyboxTex", 0);
 
-	//shaderModel0
-	//-----------------------------------
-	shaderModel0.use();
-	shaderModel0.setMat4("vuProjection", projection);
-
 	////////////////////////////////////////
-	// RENDER
-
+	// Pre-Render
+	
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	//depth
 	//-----------------------------------
 	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_LESS);
-	//glDepthFunc(GL_LESS);
-
+	
 	//stencil
 	//-----------------------------------
 	//glEnable(GL_STENCIL_TEST);
@@ -479,8 +481,11 @@ int main() {
 	//blend
 	//-----------------------------------
 	glEnable(GL_BLEND);
-	
-	glEnable(GL_PROGRAM_POINT_SIZE);
+
+	////////////////////////////////////////
+	// RENDER
+
+	glfwSetTime(0);
 
 	//render cycle
 	//-----------------------------------
@@ -533,6 +538,10 @@ int main() {
 		glBindVertexArray(VAOplane);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		model = glm::translate(model, glm::vec3(0.f, 0.f, -10.f));
+		model = glm::rotate(model, glm::radians(45.f), glm::vec3(1.f, 0.f, 0.f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		//cubes
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
@@ -543,7 +552,10 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(2.f, 0.f, 0.f));
+		model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
+		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
+		model = glm::rotate(model, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
+
 		shader0.setMat4("vuModel", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -602,6 +614,8 @@ int main() {
 		glfwPollEvents();
 	}
 
+	shadersLogs(shaders);
+
 	////////////////////////////////////////
 	// Memory dealloc
 
@@ -641,13 +655,17 @@ void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
 		yLast = yPos;
 		firstCursor = false;
 	}
+
 	float xOffset = xPos - xLast;
 	float yOffset = yLast - yPos;
 	xLast = xPos;
 	yLast = yPos;
 	float sensitivity = 0.02f;
-	yaw += xOffset * sensitivity;
-	pitch += yOffset * sensitivity;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	yaw += xOffset;
+	pitch += yOffset;
 
 	if (pitch > 89.0f) pitch = 89.0f;
 	if (pitch < -89.0f) pitch = -89.0f;
@@ -757,3 +775,11 @@ unsigned int loadCubemap(std::string dirPath, std::vector<std::string> faces)
 
 	return id;
 };
+
+void shadersLogs(const std::vector<Shader*>& shaders)
+{
+	for (const auto& x : shaders)
+	{
+		cout << '\n' << x->getInfoLog();
+	}
+}
