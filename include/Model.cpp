@@ -16,7 +16,7 @@ void Model::draw(Shader& shader)
 void Model::loadModel(string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 	
 	/*
 	* - aiProcess_FlipUVs: set vertically flip UV y-axis.
@@ -78,14 +78,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vertVec.z = mesh->mVertices[i].z;
 		vertex.position = vertVec;
 
-		vertVec.x = mesh->mNormals[i].x;
-		vertVec.y = mesh->mNormals[i].y;
-		vertVec.z = mesh->mNormals[i].z;
-		vertex.normal = vertVec;
+		if (mesh->HasNormals())
+		{
+			vertVec.x = mesh->mNormals[i].x;
+			vertVec.y = mesh->mNormals[i].y;
+			vertVec.z = mesh->mNormals[i].z;
+			vertex.normal = vertVec;
+		}
 
 		if (mesh->mTextureCoords[0])
 		{
-			vertex.texCoords = vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+			vec2 texVec;
+			texVec.x = mesh->mTextureCoords[0][i].x;
+			texVec.y = mesh->mTextureCoords[0][i].y;
+			vertex.texCoords = texVec;
+
 		}
 		else
 			vertex.texCoords = vec2(0.0f, 0.0f);
@@ -107,45 +114,96 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "tex_diffuse");
+		vector<Texture> diffuseMaps = loadTextures(material, aiTextureType_DIFFUSE, "tex_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "tex_specular");
+		vector<Texture> specularMaps = loadTextures(material, aiTextureType_SPECULAR, "tex_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "tex_normal");
+		vector<Texture> normalMaps = loadTextures(material, aiTextureType_NORMALS, "tex_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "tex_height");
+		vector<Texture> heightMaps = loadTextures(material, aiTextureType_HEIGHT, "tex_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	}
-
+	
 	return Mesh(vertices, indices, textures);
 }
 
-vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTextureType type, string typeName)
+vector<Texture> Model::loadTextures(aiMaterial* material, aiTextureType type, string typeName)
 {
 	vector<Texture> textures;
-	for (int i = 0; i < material->GetTextureCount(type); i++)
+	if (material->GetTextureCount(type) > 0)
 	{
-		aiString str;
-		material->GetTexture(type, i, &str);
-		bool skip = false;
-		
-		for (int j = 0; j < texLoaded.size(); j++)
+		for (unsigned int i = 0; i < material->GetTextureCount(type)/* returning 0 when mtl not used */; i++)
 		{
-			if (std::strcmp(str.C_Str(), texLoaded[j].path.c_str()) == 0)
+			aiString str;
+			material->GetTexture(type, i, &str);
+			bool skip = false;
+
+			for (int j = 0; j < texLoaded.size(); j++)
 			{
-				skip = true;
-				textures.push_back(texLoaded[j]);
-				break;
+				if (std::strcmp(str.C_Str(), texLoaded[j].path.c_str()) == 0)
+				{
+					skip = true;
+					textures.push_back(texLoaded[j]);
+					break;
+				}
+			}
+			if (!skip)
+			{
+				Texture texture;
+				texture.id = texFromFile(str.C_Str(), directory);
+				texture.type = typeName;
+				texture.path = str.C_Str();
+				textures.push_back(texture);
+				texLoaded.push_back(texture);
 			}
 		}
-		if (!skip)
+	}
+	else
+	{	/* No MTL */
+		for (const auto& x : fs::directory_iterator(directory))
 		{
-			Texture texture;
-			texture.id = texFromFile(str.C_Str(), directory);
-			texture.type = typeName;
-			texture.path = str.C_Str();
-			textures.push_back(texture);
-			texLoaded.push_back(texture);
+			string filename = x.path().filename().string();
+			if (type == aiTextureType_DIFFUSE)
+			{
+				Texture texture;
+
+				if ((filename.find("diffuse") != string::npos) || (filename.find("diff") != string::npos)) 
+				{	
+					texture.id = texFromFile(filename.c_str(), directory);
+					texture.type = typeName;
+					texture.path = x.path().string();
+					textures.push_back(texture);
+					texLoaded.push_back(texture);
+				} 
+			} 
+			else
+			if (type == aiTextureType_SPECULAR)
+			{
+				Texture texture;
+
+				if ((filename.find("specular") != string::npos) || (filename.find("spec") != string::npos))
+				{
+					texture.id = texFromFile(filename.c_str(), directory);
+					texture.type = typeName;
+					texture.path = x.path().string();
+					textures.push_back(texture);
+					texLoaded.push_back(texture);
+				}
+			}
+			else
+			if (type == aiTextureType_NORMALS)
+			{
+				Texture texture;
+
+				if ((filename.find("normal") != string::npos) || (filename.find("norm") != string::npos))
+				{
+					texture.id = texFromFile(filename.c_str(), directory);
+					texture.type = typeName;
+					texture.path = x.path().string();
+					textures.push_back(texture);
+					texLoaded.push_back(texture);
+				}
+			}
 		}
 	}
 

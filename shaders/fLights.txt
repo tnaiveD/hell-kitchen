@@ -16,6 +16,8 @@ struct Material
 	sampler2D tex_diffuse1;
 
 	sampler2D tex_specular0;
+
+	float shininess;
 };
 
 struct DirLight
@@ -105,7 +107,7 @@ vec3 calcDirLight(DirLight light, vec3 viewDir)
 	vec3 diffuse = light.diffuse * diff * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
 	vec3 reflectDir = reflect(lightDir, norm);
-	float spec = pow(max(0.0, dot(viewDir, reflectDir)), 64);
+	float spec = pow(max(0.0, dot(viewDir, reflectDir)), fuMaterial.shininess);
 	vec3 specular = light.specular * spec * vec3(texture(fuMaterial.tex_specular0, vTex));
 	
 	return ambient + diffuse + specular;
@@ -121,8 +123,9 @@ vec3 calcPointLight(PointLight light, vec3 viewDir)
 	float diff = max(0.0, dot(norm, lightDir));
 	vec3 diffuse = light.diffuse * diff * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(0.0, dot(viewDir, reflectDir)), 128);
+	//vec3 reflectDir = reflect(-lightDir, norm);
+	vec3 halfDir = normalize(lightDir + viewDir);
+	float spec = pow(max(0.0, dot(halfDir, norm)), fuMaterial.shininess);
 	vec3 specular = light.specular * spec * vec3(texture(fuMaterial.tex_specular0, vTex));
 
 	float d = length(light.pos - vPos);
@@ -150,7 +153,7 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 		vec3 diffuse = light.diffuse * diff * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
 		vec3 reflectDir = reflect(-lightDir, norm);
-		float spec = pow(max(0.0, dot(viewDir, reflectDir)), 128);
+		float spec = pow(max(0.0, dot(viewDir, reflectDir)), fuMaterial.shininess);
 		vec3 specular = light.specular * spec * vec3(texture(fuMaterial.tex_specular0, vTex));
 
 		float e = light.inAngle - light.outAngle;

@@ -1,9 +1,22 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+//OS specify
+#ifndef WIN32
+#define WIN32
+
+
+
+#elif LINUX
+#define
+
+#endif
+
+
 #include <iostream>
 #include <vector>
 #include <string>
+#include <filesystem>
 
 #include <assimp\Importer.hpp>
 #include <assimp\scene.h>
@@ -14,6 +27,8 @@
 #include "stb_image.h"
 
 using std::string;
+namespace fs = std::filesystem;
+
 
 unsigned int texFromFile(const char*, const string&);
 
@@ -23,9 +38,6 @@ public:
 	Model(const string&, bool);
 
 	void draw(Shader&);
-
-
-
 
 private:
 	std::vector<Mesh> meshes;
@@ -37,7 +49,7 @@ private:
 
 	void processNode(aiNode*, const aiScene*);
 	Mesh processMesh(aiMesh*, const aiScene*);
-	vector<Texture> loadMaterialTextures(aiMaterial*, aiTextureType, string);
+	vector<Texture> loadTextures(aiMaterial*, aiTextureType, string);
 };
 
 

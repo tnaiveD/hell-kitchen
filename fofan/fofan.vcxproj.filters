@@ -50,9 +50,6 @@
     <ClInclude Include="..\include\Model.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Materials.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\stb_image.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

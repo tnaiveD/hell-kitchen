@@ -129,8 +129,8 @@ public:
 
 	//Position and Direction parameters
 	SpotLight(glm::vec3 pos, glm::vec3 dir) :
-		outAngle(30.f),
-		inAngle(24.f)
+		outAngle(34.f),
+		inAngle(30.f)
 	{
 		this->pos.x = pos.x;
 		this->pos.y = pos.y;
@@ -148,8 +148,7 @@ public:
 	//Set
 	void setPos(glm::vec3 pos) { this->pos = pos; }
 	void setDir(glm::vec3 dir) { this->dir = dir; }
-	void setOutAngle(float outAngle) { this->outAngle = glm::radians(outAngle); }
-	void setInAngle(float inAngle) { this->inAngle = glm::radians(inAngle); }
+	void setAngles(float outAngle, float inAngle) { this->outAngle = outAngle; this->inAngle = inAngle; }
 
 	//Get
 	glm::vec3 getPos() const { return this->pos; }
