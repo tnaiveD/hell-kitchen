@@ -1,30 +1,5 @@
 #include "Mesh.h"
 
-///////////////////////////////////////////
-// VertexVector
-/////////////////////
-
-VertexVector::VertexVector(std::vector<Vertex> vertexVec)
-{
-	this->vertexVec = vertexVec;
-	vertexType = VERTEX; /* By default if type no passed */
-}
-
-VertexVector::VertexVector(std::vector<Vertex> vertexVec, VertexType vertexType)
-{
-	this->vertexVec = vertexVec;
-	this->vertexType = vertexType;
-}
-
-std::vector<Vertex> VertexVector::getVertexVector() const
-{
-	return vertexVec;
-}
-
-///////////////////////////////////////////
-// Mesh
-/////////////////////
-
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
 {
 	this->vertices = vertices;

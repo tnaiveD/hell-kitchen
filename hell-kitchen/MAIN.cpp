@@ -8,7 +8,8 @@
 
 #include "stb_image.h"
 
-#include "Camera.h"
+#include "Shader.h"
+#include "CamFPS.h"
 #include "Materials.h"
 #include "Light.h"
 #include "Object.h"
@@ -449,10 +450,10 @@ int main() {
 	glGenTextures(1, &texBuffer);
 	glBindTexture(GL_TEXTURE_2D, texBuffer);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texBuffer, 0);
 
@@ -478,6 +479,7 @@ int main() {
 
 	DirectionalLight DLight;
 	DLight.multDiffuse(2.f);
+
 
 	////////////////////////////////////////
 	// Textures
@@ -540,6 +542,7 @@ int main() {
 	);
 
 	//inteface blocks data init
+	//-----------------------------------
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(projection), &projection[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -600,7 +603,7 @@ int main() {
 
 	//blend
 	//-----------------------------------
-	//glEnable(GL_BLEND);
+	glEnable(GL_BLEND);
 
 	//gamma correction
 	//-----------------------------------
@@ -667,6 +670,8 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texTile);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		//cubes
 		//------------------------------------------
 		model = glm::mat4(1.f);
@@ -691,13 +696,14 @@ int main() {
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+
 		//grass
 		
 		for (auto& x : grass)
 		{
 			x.draw(shaderTransp);
 		}
-
+		
 		
 		//skybox
 		//------------------------------------------
@@ -745,8 +751,8 @@ int main() {
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteVertexArrays(1, &VAOskybox);
 
-	glDeleteFramebuffers(1, &FBO);
-	//glDeleteRenderbuffers(1, &RBO);
+	glDeleteFramebuffers(1, &FBO0);
+	glDeleteRenderbuffers(1, &RBO);
 
 	glDeleteBuffers(1, &UBOmat);
 
@@ -809,9 +815,68 @@ void processInput(GLFWwindow* window)
 		camera0.move(Camera::Direction::LEFT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera0.move(Camera::Direction::RIGHT, deltaTime);
+		cam.moveRight();
 	}
+
 }
+
+unsigned int loadTex(const char* path, GLenum mode) {
+	unsigned int id;
+	glGenTextures(1, &id);
+	int imgW, imgH, imgCh;
+	unsigned char* imgData = stbi_load(path, &imgW, &imgH, &imgCh, 0);
+	//stbi_set_flip_vertically_on_load(true);
+	if (imgData) {
+		GLenum format = 0;
+		if (imgCh == 1) format = GL_RED;
+		if (imgCh == 3) format = GL_RGB;
+		if (imgCh == 4) format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, imgW, imgH, 0, format, GL_UNSIGNED_BYTE, imgData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		if (mode == GL_REPEAT)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+		else if(mode == GL_CLAMP_TO_EDGE)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else
+		cout << "Warning: Texture not loaded\n";
+	stbi_image_free(imgData);
+
+	return id;
+};
+
+unsigned int loadCubemap(std::string dirPath, std::vector<std::string> faces)
+{
+	unsigned int id;
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+	int w, h, ch;
+	for (int i = 0; i < faces.size(); i++)
+	{
+		unsigned char* data = stbi_load((dirPath + "\\\\" + faces[i]).c_str(), &w, &h, &ch, 0);
+		if (!data)
+		{
+			cout << "Warning: loadCubemap(). texture \"" << faces[i] << "\" not found\n";
+			stbi_image_free(data);
+			continue;
+		}
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		stbi_image_free(data);
+	}
 
 
 void shadersLogs(const std::vector<Shader*>& shaders)

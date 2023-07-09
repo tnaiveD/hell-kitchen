@@ -182,10 +182,6 @@
     <Text Include="..\shaders\SingleColor.vs" />
     <Text Include="..\shaders\Skybox.vs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\shaders\Geometry.fs" />
-    <None Include="..\shaders\Geometry.vs" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

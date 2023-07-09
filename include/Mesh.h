@@ -72,7 +72,7 @@ struct Texture
 	string path;
 };
 
-////////////////////////////////////////
+//////////////////////////////////////
 // Mesh
 ///////////////////
 
@@ -112,10 +112,7 @@ private:
 };
 
 // Pass vertices data and one of VERTEX above to convert
-vector<Vertex> vertexDataToVertexVector(const float* vertexData, size_t size, VertexType vertexType);
-
-// Flip vertycally texture data
-void flipTextureCoords(float* vertexData, size_t size, VertexType vertexType);
+vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, int vertexType);
 
 /////////////////////////////////////////
 // Texture loading
