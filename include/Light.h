@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include<glm\glm.hpp>
+#include <glm\glm.hpp>
 #include "Timer.h"
 
 /////////////////////////////////////////////
@@ -46,29 +46,27 @@
 class Light 
 {
 public:
-	Light() : ambient(AMBIENT_DEFAULT),
-			  diffuse(DIFFUSE_DEFAULT),
-			  specular(SPECULAR_DEFAULT),
-			  attenuation(ATTENUATION13) {};
+	Light();
 
 	//Set
-	void setAmbient(glm::vec3 ambient) { this->ambient = ambient; }
-	void setDiffuse(glm::vec3 diffuse) { this->diffuse = diffuse; }
-	void setSpecular(glm::vec3 specular) { this->specular = specular; }
-	void setAttenuation(glm::vec3 attenuation) { this->attenuation = attenuation; }
+	void setAmbient(glm::vec3);
+	void setDiffuse(glm::vec3);
+	void setSpecular(glm::vec3);
+	void setAttenuation(glm::vec3);
 
 	//Modify
-	void multAmbient(float k) { this->ambient *= k; }
-	void multDiffuse(float k) { this->diffuse *= k; }
-	void multSpecular(float k) { this->specular *= k; }
+	void multAmbient(float);
+	void multDiffuse(float);
+	void multSpecular(float);
 
 	//Get
-	glm::vec3 getAmbient() { return this->ambient; }
-	glm::vec3 getDiffuse() { return this->diffuse; }
-	glm::vec3 getSpecular() { return this->specular; }
-	glm::vec3 getAttenuation() { return this->attenuation; }
+	glm::vec3 getAmbient() const;
+	glm::vec3 getDiffuse() const;
+	glm::vec3 getSpecular() const;
+	glm::vec3 getAttenuation() const;
 
 private:
+	unsigned char id;
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
 	glm::vec3 specular;
@@ -79,20 +77,21 @@ private:
 // Directional light
 /////////////////////////////////////
 
-#define DIRECTION_DEFAULT glm::vec3(-1.0f, -3.0f, 0.5f)
+#define DIRECTION_DEFAULT glm::vec3(-1.0f, -3.0f, 0.25f)
 
 class DirectionalLight : public Light
 {
 public:
 
 	//Direction parameter
-	DirectionalLight(glm::vec3 _dir = DIRECTION_DEFAULT) : dir(_dir) {};
+	DirectionalLight();
+	DirectionalLight(glm::vec3);
 
 	//Set
-	void setDir(glm::vec3 dir) { this->dir = dir; }
+	void setDir(glm::vec3);
 
 	//Get
-	glm::vec3 getDir() const { return this->dir; }
+	glm::vec3 getDir() const;
 
 private:
 	glm::vec3 dir;
@@ -107,13 +106,13 @@ class PointLight : public Light
 public:
 
 	//Position parameter
-	PointLight(glm::vec3 _pos = glm::vec3(0.f, 0.f, 0.f)) : pos(_pos) {};
+	PointLight(glm::vec3);
 
 	//Set
-	void setPos(glm::vec3 pos) { this->pos = pos; }
+	void setPos(glm::vec3);
 	
 	//Get
-	glm::vec3 getPos() const { return this->pos; }
+	glm::vec3 getPos() const;
 	
 private:
 	glm::vec3 pos;
@@ -128,34 +127,19 @@ class SpotLight : public Light
 public:
 
 	//Position and Direction parameters
-	SpotLight(glm::vec3 pos, glm::vec3 dir) :
-		outAngle(34.f),
-		inAngle(30.f)
-	{
-		this->pos.x = pos.x;
-		this->pos.y = pos.y;
-		this->pos.z = pos.z;
-		this->dir.x = dir.x;
-		this->dir.y = dir.y;
-		this->dir.z = dir.z;
-	};
-
-	/*SpotLight(float _posX, float _posY, float _posZ, float _dirX, float _dirY, float _dirZ)
-	{
-
-	}*/
+	SpotLight(glm::vec3, glm::vec3);
 
 	//Set
-	void setPos(glm::vec3 pos) { this->pos = pos; }
-	void setDir(glm::vec3 dir) { this->dir = dir; }
-	void setAngles(float outAngle, float inAngle) { this->outAngle = outAngle; this->inAngle = inAngle; }
+	void setPos(glm::vec3);
+	void setDir(glm::vec3);
+	void setAngles(float, float);
 
 	//Get
-	glm::vec3 getPos() const { return this->pos; }
-	glm::vec3 getDir() const { return this->dir; }
-	float getOutAngle() const { return this->outAngle; }
-	float getInAngle() const { return this->inAngle; }
-	
+	glm::vec3 getPos() const;
+	glm::vec3 getDir() const;
+	float getOutAngle() const;
+	float getInAngle() const;
+
 	//Other
 	void movePos(glm::vec3);
 	void moveDir(glm::vec3);
@@ -166,16 +150,6 @@ private:
 	float outAngle;
 	float inAngle;
 };
-
-void SpotLight::movePos(glm::vec3 move)
-{
-	this->pos += move;
-}
-
-void SpotLight::moveDir(glm::vec3 move)
-{
-	this->dir += move;
-}
 
 // Flashlight
 // --------------------------------------
@@ -212,7 +186,6 @@ private:
 //nature colors
 //-------------------------------
 #define SKY 0.2f, 0.5f, 0.9f
-
 
 
 #endif

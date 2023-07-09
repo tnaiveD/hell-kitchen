@@ -15,8 +15,6 @@ layout(std140, binding = 0) uniform Matrices
 };
 
 uniform mat4 vuModel;
-uniform mat4 vuView;
-uniform mat4 vuProjection;
 
 void main(){
 	vPos = vec3(vuModel * vec4(inPos, 1.0));

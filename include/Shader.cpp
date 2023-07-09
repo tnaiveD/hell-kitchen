@@ -188,9 +188,39 @@ void Shader::setMat4(const std::string& name, glm::mat4& mat4) const {
 
 unsigned int Shader::getID() const { return id; }
 
+void Shader::setDLight(DirectionalLight& light) const
+{
+	this->setVec3("DLight.ambient", light.getAmbient());
+	this->setVec3("DLight.diffuse", light.getDiffuse());
+	this->setVec3("DLight.specular", light.getSpecular());
+	this->setVec3("DLight.dir",	light.getDir());
+};
+
+
+void Shader::setPLights(std::vector<PointLight*>& light) const
+{
+	for (int i = 0; i < light.size(); i++)
+	{
+		this->setVec3("PLight[" + std::to_string(i) + "].ambient", light[i]->getAmbient());
+		this->setVec3("PLight[" + std::to_string(i) + "].diffuse", light[i]->getDiffuse());
+		this->setVec3("PLight[" + std::to_string(i) + "].specular", light[i]->getSpecular());
+		this->setVec3("PLight[" + std::to_string(i) + "].pos", light[i]->getPos());
+		glm::vec3 atten = light[i]->getAttenuation();
+		this->setFloat("PLight[" + std::to_string(i) + "].constant", atten.x);
+		this->setFloat("PLight[" + std::to_string(i) + "].linear", atten.y);
+		this->setFloat("PLight[" + std::to_string(i) + "].quadratic", atten.z);
+	}
+};
+
+void Shader::setSLights(std::vector<SpotLight*>& light) const
+{
+
+};
+
 void Shader::suicide() {
 	glDeleteProgram(id);
 }
+
 
 ////////////////////////////////
 // Debug

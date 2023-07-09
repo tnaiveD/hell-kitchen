@@ -494,13 +494,10 @@ int main() {
 
 	//shaders
 	
-	Shader shader0("..\\shaders\\vDefault.txt", "..\\shaders\\fDefault.txt");
-	Shader shaderLights0("..\\shaders\\vLights.txt", "..\\shaders\\fLights.txt");
-	Shader shaderLamp("..\\shaders\\vSingleColor.txt", "..\\shaders\\fSingleColor.txt");
-	Shader shaderReflect("..\\shaders\\vReflection.txt", "..\\shaders\\fReflection.txt");
+	Shader shaderLights0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
+	Shader shaderLamp("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
 
 	std::vector<Shader*> shaders;
-	shaders.push_back(&shader0);
 	shaders.push_back(&shaderLights0);
 	shaders.push_back(&shaderLamp);
 
@@ -564,11 +561,6 @@ int main() {
 	//gamma correction
 	//--------------------------------------
 	//glEnable(GL_FRAMEBUFFER_SRGB);
-
-
-
-	//... DEV here
-
 
 
 	////////////////////////////////////////

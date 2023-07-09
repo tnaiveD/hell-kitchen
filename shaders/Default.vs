@@ -11,8 +11,6 @@ layout(std140, binding = 0) uniform Matrices
 	mat4 bView;
 };
 
-uniform mat4 vuProjection;
-uniform mat4 vuView;
 uniform mat4 vuModel;
 
 void main(){

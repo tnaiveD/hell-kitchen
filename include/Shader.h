@@ -11,6 +11,9 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <vector>
+
+#include "Light.h"
 
 class Shader {
 public:
@@ -35,6 +38,11 @@ public:
 
 	//debug
 	std::string getInfoLog() const;
+
+	//light data transfer
+	void setDLight(DirectionalLight&) const;
+	void setPLights(std::vector<PointLight*>&) const;
+	void setSLights(std::vector<SpotLight*>&) const;
 
 	//dealloc
 	void suicide();

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -66,6 +66,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\HereInclude.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -145,8 +146,10 @@
   <ItemGroup>
     <ClCompile Include="..\include\CamFPS.cpp" />
     <ClCompile Include="..\include\gl.c" />
+    <ClCompile Include="..\include\Light.cpp" />
     <ClCompile Include="..\include\Mesh.cpp" />
     <ClCompile Include="..\include\Model.cpp" />
+    <ClCompile Include="..\include\Object.cpp" />
     <ClCompile Include="..\include\Shader.cpp" />
     <ClCompile Include="..\include\stb_image.cpp" />
     <ClCompile Include="MAIN.cpp" />
@@ -155,28 +158,29 @@
     <ClInclude Include="..\include\CamFPS.h" />
     <ClInclude Include="..\include\gl.h" />
     <ClInclude Include="..\include\GLFW\glfw3.h" />
-    <ClInclude Include="..\include\Lights.h" />
+    <ClInclude Include="..\include\Light.h" />
     <ClInclude Include="..\include\Materials.h" />
     <ClInclude Include="..\include\Mesh.h" />
     <ClInclude Include="..\include\Model.h" />
+    <ClInclude Include="..\include\Object.h" />
     <ClInclude Include="..\include\Shader.h" />
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="..\include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\shaders\fDefault.txt" />
-    <Text Include="..\shaders\fLights.txt" />
-    <Text Include="..\shaders\fPostprocess.txt" />
-    <Text Include="..\shaders\fReflection.txt" />
-    <Text Include="..\shaders\fSingleColor.txt" />
-    <Text Include="..\shaders\fSkybox.txt" />
-    <Text Include="..\shaders\fTransp.txt" />
-    <Text Include="..\shaders\vDefault.txt" />
-    <Text Include="..\shaders\vLights.txt" />
-    <Text Include="..\shaders\vPostprocess.txt" />
-    <Text Include="..\shaders\vReflection.txt" />
-    <Text Include="..\shaders\vSingleColor.txt" />
-    <Text Include="..\shaders\vSkybox.txt" />
+    <Text Include="..\shaders\Default.fs" />
+    <Text Include="..\shaders\Lights.fs" />
+    <Text Include="..\shaders\Postprocess.fs" />
+    <Text Include="..\shaders\Reflection.fs" />
+    <Text Include="..\shaders\SingleColor.fs" />
+    <Text Include="..\shaders\Skybox.fs" />
+    <Text Include="..\shaders\Transparency.fs" />
+    <Text Include="..\shaders\Default.vs" />
+    <Text Include="..\shaders\Lights.vs" />
+    <Text Include="..\shaders\Postprocess.vs" />
+    <Text Include="..\shaders\Reflection.vs" />
+    <Text Include="..\shaders\SingleColor.vs" />
+    <Text Include="..\shaders\Skybox.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

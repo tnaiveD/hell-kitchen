@@ -67,44 +67,23 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\shaders\fDefault.txt">
+    <None Include="..\shaders\Lights.fs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fLights.txt">
+    </None>
+    <None Include="..\shaders\Lights.vs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fPostprocess.txt">
+    </None>
+    <None Include="..\shaders\Postprocess.fs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fReflection.txt">
+    </None>
+    <None Include="..\shaders\Postprocess.vs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fSingleColor.txt">
+    </None>
+    <None Include="..\shaders\SingleColor.fs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fSkybox.txt">
+    </None>
+    <None Include="..\shaders\SingleColor.vs">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fTransp.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vDefault.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vLights.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vPostprocess.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vReflection.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vSingleColor.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vSkybox.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
+    </None>
   </ItemGroup>
 </Project>

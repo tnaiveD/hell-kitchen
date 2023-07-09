@@ -69,6 +69,6 @@ void main(){
 
 	//out
 	//---------------------
-	fColor = vec4(col, 1.0);
+	fColor = vec4(colorTex * avg, 1.0);
 	
 }

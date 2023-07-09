@@ -36,6 +36,12 @@
     <ClCompile Include="..\include\Mesh.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\Light.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Object.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CamFPS.h">
@@ -53,9 +59,6 @@
     <ClInclude Include="..\include\Materials.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Lights.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Shader.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -66,6 +69,12 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Timer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Light.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Object.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

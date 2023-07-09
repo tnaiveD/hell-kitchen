@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 in vec3 vPos;
 in vec3 vNormal;
@@ -59,19 +59,37 @@ struct SpotLight
 	float inAngle;
 };
 
+// MATERIAL
+// --------------------------------------
 uniform Material fuMaterial;
-uniform DirLight fuDLight;
-uniform PointLight fuPLight0;
-uniform SpotLight fuSLight0;
 
-uniform vec3 fuViewPos;
-uniform vec3 fuViewDir;
+// LIGHTS
+// --------------------------------------
+
+uniform DirLight DLight;
+uniform bool DLActive;
+
+#define MAX_PLIGHTS 16
+uniform PointLight PLight[MAX_PLIGHTS];
+uniform int PLnum;
+
+#define MAX_SLIGHTS 16
+uniform SpotLight SLight[MAX_SLIGHTS];
+uniform int SLnum;
 
 vec3 calcDirLight(DirLight, vec3);
 vec3 calcPointLight(PointLight, vec3);
 vec3 calcSpotLight(SpotLight, vec3);
 
-/////////////////////////////
+// CAMERA
+// --------------------------------------
+
+uniform vec3 fuViewPos;
+uniform vec3 fuViewDir;
+
+
+/////////////////////////////////////////
+// MAIN
 
 void main()
 {	
@@ -80,21 +98,34 @@ void main()
 	//data
 	vec3 viewDir = normalize(fuViewPos - vPos);
 
+
 	//directional light
-	//-------------------------------------------
-	//color += calcDirLight(fuDLight, fuViewDir);
+	if(DLActive)
+		color += calcDirLight(DLight, viewDir);
 	
 	//point lights
-	//-------------------------------------------
-	//color += calcPointLight(fuPLight0, viewDir);
+	for(int i = 0; i < PLnum; i++)
+	{
+		color += calcPointLight(PLight[i], viewDir);
+	}
 
 	//spotlights
-	//-------------------------------------------
-
-	color += calcSpotLight(fuSLight0, viewDir);
+	for(int i = 0; i < SLnum; i++)
+	{
+		color += calcSpotLight(SLight[i], viewDir);
+	}
 	
+	if ((!DLActive) && (SLnum <= 0) && (PLnum <= 0))
+		color += vec3(texture(fuMaterial.tex_diffuse0, vTex));
+
 	//////////////////////////////////////////////
+	
+	
 	fColor = vec4(color, 1.0);
+	
+	//or gamma corrected
+	//float gamma = 2.2;
+	//fColor.rgb = pow(color.rgb, vec3(1.0/gamma));
 }
 
 vec3 calcDirLight(DirLight light, vec3 viewDir)
