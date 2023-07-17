@@ -7,7 +7,7 @@
 VertexVector::VertexVector(std::vector<Vertex> vertexVec)
 {
 	this->vertexVec = vertexVec;
-	vertexType = VERTEX; /* By default if type was no passed */
+	vertexType = VERTEX; /* By default if type no passed */
 }
 
 VertexVector::VertexVector(std::vector<Vertex> vertexVec, VertexType vertexType)

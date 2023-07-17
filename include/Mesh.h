@@ -72,7 +72,7 @@ struct Texture
 	string path;
 };
 
-//////////////////////////////////////
+////////////////////////////////////////
 // Mesh
 ///////////////////
 
@@ -112,7 +112,7 @@ private:
 };
 
 // Pass vertices data and one of VERTEX above to convert
-vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, int vertexType);
+vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertexType);
 
 /////////////////////////////////////////
 // Texture loading

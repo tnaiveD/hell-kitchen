@@ -25,13 +25,14 @@ public:
 	void use();
 	
 	//set uniforms
-	void setBool(const std::string&, bool) const;
-	void setInt(const std::string&, int) const;
-	void setFloat(const std::string&, float) const;
-	void setVec3(const std::string&, float, float, float) const;
-	void setVec3(const std::string&, glm::vec3) const;
-	void setVec2(const std::string&, float, float) const;
-	void setMat4(const std::string&, glm::mat4&) const;
+	void setBool(const std::string& name, bool) const;
+	void setInt(const std::string& name, int) const;
+	void setFloat(const std::string& name, float) const;
+	void setVec3(const std::string& name, float, float, float) const;
+	void setVec3(const std::string& name, glm::vec3) const;
+	void setVec2(const std::string& name, float, float) const;
+	void setVec2(const std::string& name, glm::vec2) const;
+	void setMat4(const std::string& name, glm::mat4&) const;
 
 	//get
 	unsigned int getID() const;

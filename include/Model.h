@@ -19,12 +19,12 @@ class Model
 public:
 
 	Model(const string&, bool);
-
 	void draw(Shader&);
+
+	std::vector<Mesh> meshes;
 
 private:
 
-	std::vector<Mesh> meshes;
 	string directory;
 	vector<Texture> texLoaded;
 	bool gammaCorrection;

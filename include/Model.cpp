@@ -16,7 +16,7 @@ void Model::draw(Shader& shader)
 void Model::loadModel(string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 	
 	/*
 	* - aiProcess_FlipUVs: set vertically flip UV y-axis.
