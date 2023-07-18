@@ -167,11 +167,11 @@ void Mesh::draw(Shader& shader)
 	glActiveTexture(GL_TEXTURE0);
 }
 
-vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertType)
+vector<Vertex> vertexDataToVertexVector(const float* vertexData, size_t size, VertexType vertexType)
 {
 	vector<Vertex> vec;
 	
-	switch (vertType)
+	switch (vertexType)
 	{
 		case VERTEX: //3 pos coords, 3 normal coords, 2 tex coords 
 		{	
@@ -210,6 +210,31 @@ vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, Verte
 		default: break;
 	}
 	return vec;
+}
+
+void flipTextureCoords(float* vertices, size_t size, VertexType vertexType)
+{
+	int n = size / sizeof(float);
+	if (vertexType == VERTEX)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			if (i % 6 == 0) vertices[i] = 1.f - vertices[i];
+			if (i % 7 == 0) vertices[i] = 1.f - vertices[i];
+		}
+	}
+	else
+		if (vertexType == VERTEX_P_T)
+		{
+			for (int i = 0; i < n / 5; i++)
+			{
+				for (int j = 0; j < 5; j++)
+				{
+					if (j == 4) *vertices = 1.f - *vertices;
+					vertices++;
+				}
+			}
+		}
 }
 
 ////////////////////////////////////////////////

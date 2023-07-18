@@ -8,17 +8,16 @@
 
 #include "stb_image.h"
 
-#include "CamFPS.h"
+#include "Camera.h"
 #include "Materials.h"
 #include "Light.h"
 #include "Object.h"
 #include "Shader.h"
 #include "Timer.h"
-#include "Model.h"
 
 
-#define SCR_WIDTH 1000
-#define SCR_HEIGHT 800
+#define SCR_WIDTH 1300
+#define SCR_HEIGHT 1000
 
 #define HK_POSTPROCESS false
 
@@ -34,23 +33,24 @@ void shadersLogs(const std::vector<Shader*>&);
 
 using std::cout;
 
-
 /////////////////////////////////////////
-// Camera
-
-CamFPS cam(glm::vec3(0.0f, 1.0f, 7.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+// Speed
 
 //delta time
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
 
-//mouse view
+/////////////////////////////////////////
+// Camera
+
 float xLast = SCR_WIDTH / 2;
 float yLast = SCR_HEIGHT / 2;
 float yaw = -90.0f;
-float pitch = 0.f;
+float pitch = -10.f;
 
 bool firstCursor = true;
+
+Camera camera0(glm::vec3(0.f, 1.f, 4.f), glm::vec3(0.f, 1.f, 0.f), yaw, pitch);
 
 /////////////////////////////////////////
 // Lights
@@ -192,13 +192,13 @@ int main() {
 
 	//plane
 	const float planeVertices[] = {
-		-8.f, -0.502f, 8.f, 0.f, 1.f, 0.f,   0.f, 0.f,
-		8.f, -.502f, 8.f, 0.f, 1.f, 0.f,     16.f, 0.f,
-		-8.f, -.502f, -8.f, 0.f, 1.f, 0.f,   0.f, 16.f,
+		-8.f, 0.f, 8.f, 0.f, 1.f, 0.f,   0.f, 0.f,
+		8.f, 0.f, 8.f, 0.f, 1.f, 0.f,     16.f, 0.f,
+		-8.f, 0.f, -8.f, 0.f, 1.f, 0.f,   0.f, 16.f,
 
-		8.f, -.502f, 8.f, 0.f, 1.f, 0.f,     16.f, 0.f,
-		8.f, -.502f, -8.f, 0.f, 1.f, 0.f,    16.f, 16.f,
-		-8.f, -.502f, -8.f, 0.f, 1.f, 0.f,   0.f, 16.f
+		8.f, 0.f, 8.f, 0.f, 1.f, 0.f,     16.f, 0.f,
+		8.f, 0.f, -8.f, 0.f, 1.f, 0.f,    16.f, 16.f,
+		-8.f, 0.f, -8.f, 0.f, 1.f, 0.f,   0.f, 16.f
 	};
 
 	//grass
@@ -222,18 +222,18 @@ int main() {
 	grassMeshes.push_back(grassMesh);
 
 	srand(time(NULL));
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < 300; i++)
 	{	
 		float scaleRand = 1.f / (rand() % 9 + 1) + 0.5f;
-		glm::vec3 positionRand(static_cast<float>(rand() % 15 - 7.f) + (1.f / (static_cast<float>(rand() % 99 + 1))),
-							   -.502,
-							   static_cast<float>(rand() % 15 - 7.f) + (1.f / (static_cast<float>(rand() % 99 + 1))));
+		glm::vec3 positionRand(static_cast<float>(rand() % 15 - 7.f) + ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX))),
+							   0.f,
+							   static_cast<float>(rand() % 15 - 7.f) + ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX))));
 
 		grass.push_back(Object(grassMeshes, positionRand));
 		grass[i].rotate(static_cast<float>(rand() % 360), glm::vec3(0.f, 1.f, 0.f));
 		grass[i].scale(glm::vec3(scaleRand, scaleRand, .0f));
 	}
-
+	
 	//quad (screen)
 	float quadVertices[] = {
 		// positions   // texCoords
@@ -258,6 +258,8 @@ int main() {
 		 1.f, 0.f, 0.f,		1.f, 1.f
 	};
 
+	flipTextureCoords(pictureVertices, sizeof(pictureVertices), VERTEX_P_T);
+	
 	unsigned int VAOpicture;
 	glGenVertexArrays(1, &VAOpicture);
 	glBindVertexArray(VAOpicture);
@@ -273,6 +275,8 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, 0, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 
 	glBindVertexArray(0);
+
+	bool checkFlip = false;
 
 	//skybox
 
@@ -441,10 +445,10 @@ int main() {
 	glGenTextures(1, &texBuffer);
 	glBindTexture(GL_TEXTURE_2D, texBuffer);
 
-	glTexImage2D(GL_TEXTURE, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texBuffer, 0);
 
@@ -495,22 +499,27 @@ int main() {
 
 	//default shaders
 	Shader shader0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
+	Shader shaderPosTex("..\\shaders\\Default.vs", "..\\shaders\\Default.fs");
 	Shader shader0Stencil("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
 	Shader shaderTransp("..\\shaders\\Default.vs", "..\\shaders\\Transparency.fs");
 	Shader shaderPostproc("..\\shaders\\Postprocess.vs", "..\\shaders\\Postprocess.fs");
 	Shader shaderSkybox("..\\shaders\\Skybox.vs", "..\\shaders\\Skybox.fs");
 	Shader shaderModel0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
+	Shader shaderScreenTex("..\\shaders\\ScreenTexture.vs", "..\\shaders\\ScreenTexture.fs");
 
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shader0);
+	shaders.push_back(&shaderPosTex);
 	shaders.push_back(&shader0Stencil);
 	shaders.push_back(&shaderTransp);
 	shaders.push_back(&shaderPostproc);
 	shaders.push_back(&shaderSkybox);
 	shaders.push_back(&shaderModel0);
+	shaders.push_back(&shaderScreenTex);
 
 	//interface blocks
 	//--------------------------------------
+	
 	unsigned int UBOmat;
 	glGenBuffers(1, &UBOmat);
 
@@ -528,7 +537,6 @@ int main() {
 	);
 
 	//inteface blocks data init
-	//-----------------------------------
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(projection), &projection[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -536,6 +544,7 @@ int main() {
 
 	//shader0 (Default)
 	//-----------------------------------
+	
 	shader0.use();
 	
 	shader0.setInt("fuMaterial.tex_diffuse0", 0);
@@ -550,16 +559,26 @@ int main() {
 
 	//shader0Stencil
 	//-----------------------------------
+	
 	shader0Stencil.use();
 
 	//shaderTransp
 	//-----------------------------------
+	
 	shaderTransp.use();
 
 	//shaderSkybox
 	//-----------------------------------
+	
 	shaderSkybox.use();
 	shaderSkybox.setInt("skyboxTex", 0);
+
+	//shaderScreenTex
+	//-----------------------------------
+	
+	shaderScreenTex.use();
+	shaderScreenTex.setInt("screenTex", 0);
+
 
 	////////////////////////////////////////
 	// Pre-Render
@@ -601,14 +620,12 @@ int main() {
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		cam.setDeltaTime(deltaTime);
 		
 		////////////////////////////////////
 		// Camera
 
-		glm::vec3 camPos = cam.getPos();
-		glm::vec3 camDir = cam.getDir();
-		glm::mat4 camView = cam.getView();
+		glm::vec3 camPos = camera0.getPos();
+		glm::mat4 camView = camera0.getView();
 
 		////////////////////////////////////
 		// Shader blocks
@@ -636,6 +653,7 @@ int main() {
 		glm::mat4 model = glm::mat4(1.f);
 
 		//plane
+		//-------------------------------------------
 		shader0.use();
 
 		model = glm::mat4(1.f);
@@ -649,11 +667,10 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texTile);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 		//cubes
+		//------------------------------------------
 		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
+		model = glm::translate(model, glm::vec3(-1.f, 0.502f, -1.f));
 		shader0.setMat4("vuModel", model);
 
 		glBindVertexArray(VAOcube);
@@ -664,7 +681,7 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
+		model = glm::translate(model, glm::vec3(1.f, 0.302f, 0.5f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
 		model = glm::rotate(model, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
 
@@ -676,6 +693,7 @@ int main() {
 
 
 		//grass
+		//------------------------------------------
 		//shaderTransp.use();
 		//model = glm::mat4(1.f);
 		//model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
@@ -687,9 +705,10 @@ int main() {
 		{
 			x.draw(shaderTransp);
 		}
-		
+
 		
 		//skybox
+		//------------------------------------------
 		glDepthFunc(GL_LEQUAL);
 		//glDepthMask(GL_FALSE);
 
@@ -703,45 +722,38 @@ int main() {
 		//glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
 
-		/*
-		* Drawing scene into framebuffer (getting texture) ->
-		* bind default buffer ->
-		* trying to copy scene from FBO to default ->
-		* drawing PICTURE consists of buffer texture over the main scene, set DEPTH conditions
 
-			DEV     HERE
-				___
-			   |   |
-			   |   |
-			   |   |
-		   ____|   |____
-		   \           /
-			\         /
-			 \       /
-			  \     /
-			   \   /
-				\ /
-				 "
-		
-		*/
-
+		//prepare to picture drawing
+		//------------------------------------------
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		shaderPostproc.use();
+		shaderScreenTex.use();
 
 		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		glDepthFunc(GL_GEQUAL);
 
 		//picture
+		
 		VertexVector pictureVertexVector(vertexDataToVertexVector(pictureVertices, sizeof(pictureVertices) / sizeof(float), VERTEX_P_T));
 		Texture texPicture;
 		texPicture.id = texBuffer;
 		texPicture.type = TEXTURE_DIFFUSE;
 		Mesh pictureMesh(pictureVertexVector.getVertexVector(), texPicture);
-		Object picture(pictureMesh, glm::vec3(5.f, 0.f, 2.f));
-		picture.draw(shader0);
+		Object picture(pictureMesh, glm::vec3(-4.f, 1.f, 2.f));
+		picture.rotate(25.f, glm::vec3(0.f, 1.f, 0.f));
+
+		picture.draw(shaderTransp);
+
+		//
+
+		glDepthFunc(GL_LESS);
+
 
 		//postprocess
-		//--------------------------
+		//------------------------------------------
 		
 		
 
@@ -751,6 +763,8 @@ int main() {
 		////////////////////////////////////
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		//camera0.processMouseMovement(10.f, 10.f);
 	}
 
 	shadersLogs(shaders);
@@ -787,65 +801,54 @@ void framebuffer_size_callback(GLFWwindow* window, int x, int y) {
 	glViewport(0, 0, x, y);
 }
 
-void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
+void cursor_pos_callback(GLFWwindow* window, double xIn, double yIn) 
+{
+	float _xIn = static_cast<float>(xIn);
+	float _yIn = static_cast<float>(yIn);
 
 	if (firstCursor) {
-		xLast = xPos;
-		yLast = yPos;
+		xLast = _xIn;
+		yLast = _yIn;
 		firstCursor = false;
 	}
+	
+	float xOffset = _xIn - xLast;
+	float yOffset = yLast - _yIn;
 
-	float xOffset = xPos - xLast;
-	float yOffset = yLast - yPos;
-	xLast = xPos;
-	yLast = yPos;
-	float sensitivity = 0.02f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
+	xLast = _xIn;
+	yLast = _yIn;
 
-	yaw += xOffset;
-	pitch += yOffset;
-
-	if (pitch > 89.0f) pitch = 89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
-
-	glm::vec3 dir;
-	dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	dir.y = sin(glm::radians(pitch));
-	dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cam.setDir(glm::normalize(dir));
+	camera0.processMouseMovement(xOffset, yOffset);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int modes) {
-	
-	//flashlight
-	if ((key == GLFW_KEY_L) && (action == GLFW_PRESS)) {
-		if (flActive)
-			flActive = false;
-		else
-			flActive = true;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if ((key == GLFW_KEY_Q) && (action == GLFW_PRESS))
+	{
+		camera0.turnBack();
 	}
 }
 
-void processInput(GLFWwindow* window) {
+
+void processInput(GLFWwindow* window)
+{
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 
 	//camera movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cam.moveFront();
+		camera0.move(Camera::Direction::FRONT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cam.moveBack();
+		camera0.move(Camera::Direction::BACK, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cam.moveLeft();
+		camera0.move(Camera::Direction::LEFT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cam.moveRight();
+		camera0.move(Camera::Direction::RIGHT, deltaTime);
 	}
-
 }
 
 

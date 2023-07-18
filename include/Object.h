@@ -41,6 +41,7 @@ public:
 	void moveTo(glm::vec3 coords);
 	void rotate(float angle, glm::vec3 axes);
 	void scale(glm::vec3 scope);
+	void flipVertical();
 
 private:
 	vector<Mesh> meshes;

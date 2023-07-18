@@ -18,7 +18,7 @@
     <ClCompile Include="MAIN.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\CamFPS.cpp">
+    <ClCompile Include="..\include\Camera.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="..\include\Shader.cpp">
@@ -44,7 +44,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\CamFPS.h">
+    <ClInclude Include="..\include\Camera.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="..\include\gl.h">
@@ -79,44 +79,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\shaders\fDefault.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fLights.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fPostprocess.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fReflection.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fSingleColor.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fSkybox.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\fTransp.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vDefault.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vLights.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vPostprocess.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vReflection.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vSingleColor.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="..\shaders\vSkybox.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
+    <Text Include="..\shaders\Default.fs" />
+    <Text Include="..\shaders\Lights.fs" />
+    <Text Include="..\shaders\Postprocess.fs" />
+    <Text Include="..\shaders\Reflection.fs" />
+    <Text Include="..\shaders\SingleColor.fs" />
+    <Text Include="..\shaders\Skybox.fs" />
+    <Text Include="..\shaders\Transparency.fs" />
+    <Text Include="..\shaders\Default.vs" />
+    <Text Include="..\shaders\Lights.vs" />
+    <Text Include="..\shaders\Postprocess.vs" />
+    <Text Include="..\shaders\Reflection.vs" />
+    <Text Include="..\shaders\SingleColor.vs" />
+    <Text Include="..\shaders\Skybox.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\ScreenTexture.fs" />
+    <None Include="..\shaders\ScreenTexture.vs" />
   </ItemGroup>
 </Project>

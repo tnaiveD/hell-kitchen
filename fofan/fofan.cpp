@@ -7,7 +7,7 @@
 #include "stb_image.h"
 
 #include "Shader.h"
-#include "CamFPS.h"
+#include "Camera.h"
 #include "Materials.h"
 #include "Light.h"
 #include "Timer.h"

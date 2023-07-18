@@ -130,7 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\CamFPS.cpp" />
+    <ClCompile Include="..\include\Camera.cpp" />
     <ClCompile Include="..\include\gl.c" />
     <ClCompile Include="..\include\Mesh.cpp" />
     <ClCompile Include="..\include\Model.cpp" />
@@ -139,7 +139,7 @@
     <ClCompile Include="fofan.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\CamFPS.h" />
+    <ClInclude Include="..\include\Camera.h" />
     <ClInclude Include="..\include\gl.h" />
     <ClInclude Include="..\include\GLFW\glfw3.h" />
     <ClInclude Include="..\include\Light.h" />
