@@ -33,7 +33,7 @@
     <ClCompile Include="..\include\Mesh.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\Camera.cpp">
+    <ClCompile Include="..\include\Light.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

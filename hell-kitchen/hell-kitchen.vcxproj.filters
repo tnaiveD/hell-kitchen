@@ -94,7 +94,29 @@
     <Text Include="..\shaders\Skybox.vs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\ScreenTexture.fs" />
-    <None Include="..\shaders\ScreenTexture.vs" />
+    <None Include="..\shaders\Geometry.fs" />
+    <None Include="..\shaders\Geometry.vs" />
+    </Text>
+    <Text Include="..\shaders\fTransp.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vDefault.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vLights.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vPostprocess.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vReflection.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vSingleColor.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="..\shaders\vSkybox.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
 </Project>

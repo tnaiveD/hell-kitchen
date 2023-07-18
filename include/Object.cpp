@@ -23,7 +23,6 @@ Object::Object(std::vector<Mesh>& meshes) : Object()
 
 Object::Object(Mesh& mesh, glm::vec3 pos) : Object()
 {
-	moveTo(pos);
 	meshes.push_back(mesh);
 }
 
@@ -34,7 +33,7 @@ Object::Object(Mesh& mesh) : Object()
 
 glm::vec3 Object::getPos() const
 {
-	return this->pos;
+	return pos;
 }
 
 glm::mat4 Object::getModel() const
@@ -62,15 +61,6 @@ void Object::scale(glm::vec3 scope)
 	model = glm::scale(model, scope);
 }
 
-void Object::flipVertical()
-{
-	scale(glm::vec3(1.f, -1.f, 1.f));
-}
-
-
-//////////////////////////////////////////
-// Draw
-///////////////////
 void Object::draw(Shader& shader)
 {
 	shader.use();

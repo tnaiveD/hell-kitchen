@@ -66,10 +66,14 @@ float flTimer = 0.f;
 // MAIN
 
 int main() {
+	
 	glfwInit();
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	GLFWwindow* window = glfwCreateWindow(
 		SCR_WIDTH, SCR_HEIGHT,
 		"...",
@@ -225,9 +229,9 @@ int main() {
 	for (int i = 0; i < 300; i++)
 	{	
 		float scaleRand = 1.f / (rand() % 9 + 1) + 0.5f;
-		glm::vec3 positionRand(static_cast<float>(rand() % 15 - 7.f) + ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX))),
-							   0.f,
-							   static_cast<float>(rand() % 15 - 7.f) + ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX))));
+		glm::vec3 positionRand(static_cast<float>(rand() % 15 - 7.f) + (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)),
+							   -.502,
+							   static_cast<float>(rand() % 15 - 7.f) + (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
 
 		grass.push_back(Object(grassMeshes, positionRand));
 		grass[i].rotate(static_cast<float>(rand() % 360), glm::vec3(0.f, 1.f, 0.f));
@@ -475,7 +479,6 @@ int main() {
 	DirectionalLight DLight;
 	DLight.multDiffuse(2.f);
 
-
 	////////////////////////////////////////
 	// Textures
 
@@ -602,8 +605,11 @@ int main() {
 	//gamma correction
 	//-----------------------------------
 	
+	//multisampling
+	//-----------------------------------
+	glEnable(GL_MULTISAMPLE);
 
-	////////////////////////////////////////
+	////////////////////////////////////////////
 	// RENDER
 
 	glfwSetTime(0);
@@ -637,11 +643,6 @@ int main() {
 		////////////////////////////////////
 		// Framebuffers
 
-		glClearColor(.1f, .1f, .1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO); /* Drawing to texBuffer */
-
 		glEnable(GL_DEPTH_TEST);
 
 		glClearColor(1.f, 1.f, 1.f, 1.0f);
@@ -649,18 +650,17 @@ int main() {
 
 		////////////////////////////////////
 		// Drawing
-
+		
 		glm::mat4 model = glm::mat4(1.f);
 
 		//plane
 		//-------------------------------------------
 		shader0.use();
-
+		
 		model = glm::mat4(1.f);
 		//model = glm::scale(model, glm::vec3(0.25f, 0.f, 0.25f));
 		shader0.setMat4("vuModel", model);
 		shader0.setVec3("fuViewPos", camPos);
-
 
 		glBindVertexArray(VAOplane);
 		glActiveTexture(GL_TEXTURE0);
@@ -691,16 +691,8 @@ int main() {
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-
 		//grass
-		//------------------------------------------
-		//shaderTransp.use();
-		//model = glm::mat4(1.f);
-		//model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
-
-		//grassMesh.draw(shaderTransp);
-
-
+		
 		for (auto& x : grass)
 		{
 			x.draw(shaderTransp);
@@ -721,36 +713,6 @@ int main() {
 
 		//glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
-
-
-		//prepare to picture drawing
-		//------------------------------------------
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		shaderScreenTex.use();
-
-		glBindVertexArray(quadVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texBuffer);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glDepthFunc(GL_GEQUAL);
-
-		//picture
-		
-		VertexVector pictureVertexVector(vertexDataToVertexVector(pictureVertices, sizeof(pictureVertices) / sizeof(float), VERTEX_P_T));
-		Texture texPicture;
-		texPicture.id = texBuffer;
-		texPicture.type = TEXTURE_DIFFUSE;
-		Mesh pictureMesh(pictureVertexVector.getVertexVector(), texPicture);
-		Object picture(pictureMesh, glm::vec3(-4.f, 1.f, 2.f));
-		picture.rotate(25.f, glm::vec3(0.f, 1.f, 0.f));
-
-		picture.draw(shaderTransp);
-
-		//
-
-		glDepthFunc(GL_LESS);
-
 
 		//postprocess
 		//------------------------------------------

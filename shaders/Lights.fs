@@ -1,7 +1,7 @@
 #version 420 core
 
 in vec3 vPos;
-in vec3 vNormal;
+in vec3 vNormals;
 in vec2 vTex;
 
 out vec4 fColor;
@@ -85,7 +85,6 @@ vec3 calcSpotLight(SpotLight, vec3);
 // --------------------------------------
 
 uniform vec3 fuViewPos;
-uniform vec3 fuViewDir;
 
 
 /////////////////////////////////////////
@@ -101,8 +100,10 @@ void main()
 
 	//directional light
 	if(DLActive)
+	{
 		color += calcDirLight(DLight, viewDir);
-	
+		//color = vec3(1.0, 0.0, 0.0);
+	}
 	//point lights
 	for(int i = 0; i < PLnum; i++)
 	{
@@ -120,7 +121,6 @@ void main()
 
 	//////////////////////////////////////////////
 	
-	
 	fColor = vec4(color, 1.0);
 	
 	//or gamma corrected
@@ -132,7 +132,7 @@ vec3 calcDirLight(DirLight light, vec3 viewDir)
 {
 	vec3 ambient = light.ambient * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
-	vec3 norm = normalize(vNormal);
+	vec3 norm = normalize(vNormals);
 	vec3 lightDir = normalize(light.dir);
 	float diff = max(0.0, dot(-lightDir, norm));
 	vec3 diffuse = light.diffuse * diff * vec3(texture(fuMaterial.tex_diffuse0, vTex));
@@ -140,14 +140,15 @@ vec3 calcDirLight(DirLight light, vec3 viewDir)
 	vec3 reflectDir = reflect(lightDir, norm);
 	float spec = pow(max(0.0, dot(viewDir, reflectDir)), fuMaterial.shininess);
 	vec3 specular = light.specular * spec * vec3(texture(fuMaterial.tex_specular0, vTex));
-	
+		
 	return ambient + diffuse + specular;
+	//return vec3(1.0, 0.0, 0.0);
 }
 
 vec3 calcPointLight(PointLight light, vec3 viewDir)
 {
 	vec3 lightDir = normalize(light.pos - vPos);
-	vec3 norm = normalize(vNormal);
+	vec3 norm = normalize(vNormals);
 
 	vec3 ambient = light.ambient * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
@@ -176,7 +177,7 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 	
 	if(theta > light.outAngle)
 	{
-		vec3 norm = normalize(vNormal);
+		vec3 norm = normalize(vNormals);
 
 		vec3 ambient = light.ambient * vec3(texture(fuMaterial.tex_diffuse0, vTex));
 

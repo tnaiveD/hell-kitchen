@@ -172,6 +172,21 @@ void Shader::setVec2(const std::string& name, float x, float y) const {
 		glUniform2f(location, x, y);
 }
 
+void Shader::setVec2(const std::string& name, glm::vec2 vec) const {
+	int location = glGetUniformLocation(id, name.c_str());
+
+	if (location == -1)
+	{
+		if (wrongUniforms.find(name) == wrongUniforms.end())
+		{
+			infoLog += std::string("- Uniform \"" + name + "\" does not exist or use.\n");
+			wrongUniforms.insert(name);
+		}
+	}
+	else
+		glUniform2f(location, vec.x, vec.y);
+}
+
 void Shader::setMat4(const std::string& name, glm::mat4& mat4) const {
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)

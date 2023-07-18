@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="..\include\Camera.cpp" />
     <ClCompile Include="..\include\gl.c" />
+    <ClCompile Include="..\include\Light.cpp" />
     <ClCompile Include="..\include\Mesh.cpp" />
     <ClCompile Include="..\include\Model.cpp" />
     <ClCompile Include="..\include\Shader.cpp" />
