@@ -96,5 +96,6 @@
   <ItemGroup>
     <None Include="..\shaders\Geometry.fs" />
     <None Include="..\shaders\Geometry.vs" />
+    <None Include="..\shaders\Geometry.gs" />
   </ItemGroup>
 </Project>

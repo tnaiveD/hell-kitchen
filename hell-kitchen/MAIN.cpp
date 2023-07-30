@@ -334,6 +334,28 @@ int main() {
 		 1.0f, -1.0f,  1.0f
 	};
 
+	//points
+	float pointData[] = {
+	-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
+	 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
+	 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
+	-0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
+	};
+
+	unsigned int VAOpoint, VBOpoint;
+	glGenVertexArrays(1, &VAOpoint);
+	glBindVertexArray(VAOpoint);
+	glGenBuffers(1, &VBOpoint);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOpoint);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(pointData), pointData, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 2));
+
+	glBindVertexArray(0);
+
 	//data init
 	//--------------------------------
 
@@ -503,7 +525,9 @@ int main() {
 	Shader shaderPostproc("..\\shaders\\Postprocess.vs", "..\\shaders\\Postprocess.fs");
 	Shader shaderSkybox("..\\shaders\\Skybox.vs", "..\\shaders\\Skybox.fs");
 	Shader shaderModel0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
-
+	Shader shaderGeometry0("..\\shaders\\Geometry.vs", "..\\shaders\\Geometry.fs", "..\\shaders\\Geometry.gs");
+	
+	//uniform log
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shader0);
 	shaders.push_back(&shader0Stencil);
@@ -588,7 +612,7 @@ int main() {
 	
 	//multisampling
 	//-----------------------------------
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	////////////////////////////////////////////
 	// RENDER
@@ -628,71 +652,74 @@ int main() {
 
 		glEnable(GL_DEPTH_TEST);
 
-		glClearColor(1.f, 1.f, 1.f, 1.0f);
+		glClearColor(BLACK, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		////////////////////////////////////
 		// Drawing
 		
-		glm::mat4 model = glm::mat4(1.f);
+		shaderGeometry0.use();
+		glBindVertexArray(VAOpoint);
+		glDrawArrays(GL_POINTS, 0, 4);
+		//glm::mat4 model = glm::mat4(1.f);
 
-		//plane
-		shader0.use();
-		
-		model = glm::mat4(1.f);
-		//model = glm::scale(model, glm::vec3(0.25f, 0.f, 0.25f));
-		shader0.setMat4("vuModel", model);
-		shader0.setVec3("fuViewPos", camPos);
+		////plane
+		//shader0.use();
+		//
+		//model = glm::mat4(1.f);
+		////model = glm::scale(model, glm::vec3(0.25f, 0.f, 0.25f));
+		//shader0.setMat4("vuModel", model);
+		//shader0.setVec3("fuViewPos", camPos);
 
-		glBindVertexArray(VAOplane);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texTile);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glBindVertexArray(VAOplane);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texTile);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		//cubes
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
-		shader0.setMat4("vuModel", model);
+		////cubes
+		//model = glm::mat4(1.f);
+		//model = glm::translate(model, glm::vec3(-1.f, 0.f, -1.f));
+		//shader0.setMat4("vuModel", model);
 
-		glBindVertexArray(VAOcube);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texContainerDiff);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texContainerSpec);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
-		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
-		model = glm::rotate(model, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
+		//glBindVertexArray(VAOcube);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texContainerDiff);
+		//glActiveTexture(GL_TEXTURE0 + 1);
+		//glBindTexture(GL_TEXTURE_2D, texContainerSpec);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//
+		//model = glm::mat4(1.f);
+		//model = glm::translate(model, glm::vec3(1.f, -0.2f, 0.5f));
+		//model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
+		//model = glm::rotate(model, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
 
-		shader0.setMat4("vuModel", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//shader0.setMat4("vuModel", model);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		//glActiveTexture(GL_TEXTURE0 + 1);
+		//glBindTexture(GL_TEXTURE_2D, 0);
 
-		//grass
-		
-		for (auto& x : grass)
-		{
-			x.draw(shaderTransp);
-		}
-		
-		
-		//skybox
-		glDepthFunc(GL_LEQUAL);
-		//glDepthMask(GL_FALSE);
+		////grass
+		//
+		//for (auto& x : grass)
+		//{
+		//	x.draw(shaderTransp);
+		//}
+		//
+		//
+		////skybox
+		//glDepthFunc(GL_LEQUAL);
+		////glDepthMask(GL_FALSE);
 
-		shaderSkybox.use();
+		//shaderSkybox.use();
 
-		glBindVertexArray(VAOskybox);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, texSkybox);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(VAOskybox);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, texSkybox);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//glDepthMask(GL_TRUE);
-		glDepthFunc(GL_LESS);
+		////glDepthMask(GL_TRUE);
+		//glDepthFunc(GL_LESS);
 
 		//postprocess
 		//--------------------------
@@ -805,6 +832,7 @@ void processInput(GLFWwindow* window) {
 
 void shadersLogs(const std::vector<Shader*>& shaders)
 {
+	cout << "Uniforms Log:\n";
 	for (const auto& x : shaders)
 	{
 		cout << '\n' << x->getInfoLog();

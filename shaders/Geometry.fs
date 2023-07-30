@@ -1,14 +1,10 @@
-#version 420 core
+#version 330 core
 
 out vec4 fColor;
 
-in vec2 vTex;
+in vec3 gColor;
 
-uniform sampler2D tex;
-
-
-void main(){	
-
-	fColor = texture(tex, vTex);
-	
-}
+void main()
+{
+    fColor = vec4(gColor, 1.0);   
+}  

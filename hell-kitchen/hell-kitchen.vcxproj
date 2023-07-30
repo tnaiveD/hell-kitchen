@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\Geometry.fs" />
+    <None Include="..\shaders\Geometry.gs" />
     <None Include="..\shaders\Geometry.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -14,8 +14,8 @@
 #include "Model.h"
 
 
-#define SCR_WIDTH 1000
-#define SCR_HEIGHT 800
+#define SCR_WIDTH 1100
+#define SCR_HEIGHT 700
 
 #define NAME_TO_STR(name) (#name)
 
@@ -57,7 +57,8 @@ float flTimer = 0.f;
 /////////////////////////////////////////
 // MAIN
 
-int main() {
+int main() 
+{
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -93,7 +94,7 @@ int main() {
 	////////////////////////////////////////
 	// Data configuring
 
-	//cube
+	//cube V N T
 	const float cube1vertices[] = {
 		//vertex			  //normal			   //tex
 		 -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -139,7 +140,7 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	//cube no normal
+	//cube V T
 	const float cube2vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -184,7 +185,7 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	//plane
+	//plane V N T
 	const float planeVertices[] = {
 		-15.f, -0.502f, 15.f, 0.f, 1.f, 0.f, 0.f, 0.f,
 		15.f, -.502f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
@@ -195,7 +196,7 @@ int main() {
 		-15.f, -.502f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f
 	};
 
-	//grass
+	//grass V T
 	const float grassVertices[] = {
 		-0.5f, 0.5f, 0.f,   0.0f, 0.0f,
 		-0.5f, -0.5f, 0.f,  0.0f, 1.0f,
@@ -206,7 +207,7 @@ int main() {
 		0.5f, 0.5f, 0.f,    1.0f, 0.0f,
 	};
 
-	//mirror
+	//mirror V 
 	const float mirrorVertices[] = {
 		-0.25f, 0.0f, 0.f,
 		-0.25f, 1.0f, 0.f,
@@ -217,7 +218,7 @@ int main() {
 		0.25f, 1.0f, 0.f
 	};
 
-	//quad (screen)
+	//quad (screen) V T
 	float quadVertices[] = {
 		// positions   // texCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
@@ -284,52 +285,6 @@ int main() {
 		 1.0f, -1.0f,  1.0f
 	};
 
-	//cube (vertex + normal)
-
-	float cubeVNVertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-	};
-
 	//data init
 	//--------------------------------
 
@@ -361,18 +316,6 @@ int main() {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
 
-	//grass VAO
-	unsigned int VBOgrass, VAOgrass;
-	glGenVertexArrays(1, &VAOgrass);
-	glBindVertexArray(VAOgrass);
-	glGenBuffers(1, &VBOgrass);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOgrass);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(grassVertices), grassVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
-
 	//screen VAO
 	unsigned int quadVAO, quadVBO;
 	glGenVertexArrays(1, &quadVAO);
@@ -395,26 +338,6 @@ int main() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 
-	//cubeVN (vertex + normal)
-	unsigned int VAOcubeVN, VBOcubeVN;
-	glGenVertexArrays(1, &VAOcubeVN);
-	glBindVertexArray(VAOcubeVN);
-	glGenBuffers(1, &VBOcubeVN);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOcubeVN);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVNVertices), NULL, GL_STATIC_DRAW);
-
-	void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	memcpy(ptr, cubeVNVertices, sizeof(cubeVNVertices));
-	if (!glUnmapBuffer(GL_ARRAY_BUFFER))
-	{
-		cout << "Error: glUnmapBuffer() return false\n";
-	}
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
-
 	glBindVertexArray(0);
 
 	//framebuffers (and renderbuffers)
@@ -431,13 +354,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOtex, 0);
 
-	//or?
-	/*glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0,
-		GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
-	);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, FBOtex, 0);*/
-
 	//renderbuffers
 	unsigned int RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -451,22 +367,62 @@ int main() {
 		cout << "ERROR: Framebuffer status NOT_COMPLETE\n";
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+	//shadow buffers
+	//----------------------------------
+	unsigned int FBOdepthmap;
+	glGenFramebuffers(1, &FBOdepthmap);
+	
+	unsigned int depthmap;
+	const unsigned int c_shadowwidth = 1024, c_shadowheight = 1024;
+	glGenTextures(1, &depthmap);
+	glBindTexture(GL_TEXTURE_2D, depthmap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, c_shadowwidth, c_shadowheight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthmap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	////////////////////////////////////////
 	// Lights
 
-	//dir lights
+	DirectionalLight dLight;
+	dLight.setActive(true);
 
-	//point lights
+	PointLight pLight0(-5.f, 2.5f, 0.f);
+	pLight0.multAmbient(0.05f);
+	pLight0.multDiffuse(2.f);
+	pLight0.setAttenuation(ATTENUATION20);
 
-	//spotlights
-	SpotLight sLight0(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	sLight0.setAttenuation(ATTENUATION13);
-	sLight0.setAngles(44.f, 38.f);
+	SpotLight sLight0(glm::vec3(0.0f, 1.5f, 0.0f));
+	SpotLight sLight1(glm::vec3(5.0f, 1.5f, 0.0f));
+	SpotLight sLight2(-1.f, 0.5f, 4.5f, 0.25f, 0.f, -1.f);
+	SpotLight sLight3(1.f, 0.5f, 4.5f, -0.25f, 0.f, -1.f);
 
-	sLight0.multAmbient(0.2f);
-	sLight0.multDiffuse(5.f);
-	sLight0.multSpecular(4.f);
+
+	vector<SpotLight*> sLights
+	{
+		&sLight0, &sLight1, &sLight2, &sLight3
+	};
+
+	for (const auto& x : sLights)
+	{
+		x->setAttenuation(ATTENUATION32);
+		x->multAmbient(0.05f);
+		x->multDiffuse(2.f);
+		x->setRadius(50.f);
+	}
+
+	sLight0.setActive(false);
+	sLight2.setDiffuse(glm::vec3(0.6f, 0.1f, 0.2f));
+	sLight3.setDiffuse(glm::vec3(0.1f, 0.2f, 0.7f));
 
 	////////////////////////////////////////
 	// Textures
@@ -491,8 +447,6 @@ int main() {
 	////////////////////////////////////////
 	// Shaders
 
-	//shaders
-	
 	Shader shaderLights0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
 	Shader shaderLamp("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
 
@@ -520,26 +474,13 @@ int main() {
 	//shaderLights
 	//-----------------------------------
 	shaderLights0.use();
-
-	//shaderLights0.setVec3("fuMaterial.tex_ambient", );
-	shaderLights0.setInt("SLnum", 1);
-
+	
 	shaderLights0.setInt("fuMaterial.tex_diffuse0", 0);
 	shaderLights0.setInt("fuMaterial.tex_specular0", 1);
 
-	shaderLights0.setVec3("SLight[0].ambient", sLight0.getAmbient());
-	shaderLights0.setVec3("SLight[0].diffuse", sLight0.getDiffuse());
-	shaderLights0.setVec3("SLight[0].specular", sLight0.getSpecular());
-	shaderLights0.setVec3("SLight[0].pos", sLight0.getPos());
-	shaderLights0.setVec3("SLight[0].dir", sLight0.getDir());
-
-	glm::vec3 tmpAtten = sLight0.getAttenuation();
-	shaderLights0.setFloat("SLight[0].constant", tmpAtten.x);
-	shaderLights0.setFloat("SLight[0].linear", tmpAtten.y);
-	shaderLights0.setFloat("SLight[0].quadratic", tmpAtten.z);
-
-	shaderLights0.setFloat("SLight[0].outAngle", glm::cos(glm::radians(sLight0.getOutAngle())));
-	shaderLights0.setFloat("SLight[0].inAngle", glm::cos(glm::radians(sLight0.getInAngle())));
+	//shaderLights0.setDLight(dLight);
+	shaderLights0.setSLights(sLights);
+	shaderLights0.setPLights(pLight0);
 
 	//shaderReflect (reflection)
 	//-----------------------------------
@@ -564,7 +505,7 @@ int main() {
 	////////////////////////////////////////
 	// RENDER
 	
-	glfwSetTime(0);
+	bool firstTime = true;
 
 	//render cycle
 	//-----------------------------------
@@ -582,6 +523,12 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		////////////////////////////////////
+		if (firstTime)
+		{
+			glfwSetTime(0);
+			firstTime = false;
+		}
+
 		float time = glfwGetTime();
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
@@ -603,19 +550,20 @@ int main() {
 		// Drawing
 
 		glm::mat4 model = glm::mat4(1.f);
-
+		
 		//LIGHTS data (shaderLights0)
 		
 		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
 		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
 		float xMoveDir = cos(time * 1.75f) * deltaTime * 0.1f;
+		
 
 		sLight0.movePos(glm::vec3(xMovePos, yMovePos, 0.f));
 		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
 
+
 		shaderLights0.use();
-		shaderLights0.setVec3("SLight[0].pos", sLight0.getPos());
-		shaderLights0.setVec3("SLight[0].dir", sLight0.getDir());
+		shaderLights0.setSLights(sLight0);
 
 		//plane
 		shaderLights0.setVec3("fuViewPos", camPos);
@@ -768,7 +716,7 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		cam.moveRight();
-	}
+	} 
 }
 
 void shadersLogs(const std::vector<Shader*>& shaders)

@@ -1,21 +1,12 @@
-#version 420 core
+#version 330 core
 
-out vec2 vTex;
+layout(location = 0) in vec2 inPos;
+layout(location = 1) in vec3 inColor;
 
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec2 inTex;
+out vec3 vColor;
 
-layout(std140, binding = 0) uniform Matrices
+void main()
 {
-	mat4 bProjection;
-	mat4 bView;
-};
-
-uniform mat4 vuModel;
-
-void main(){
-
-	vTex = inTex;
-	gl_Position = bProjection * bView * vuModel * vec4(inPos, 1.0);
-
+    gl_Position = vec4(inPos.x, inPos.y, 0.0, 1.0); 
+    vColor = inColor;
 }

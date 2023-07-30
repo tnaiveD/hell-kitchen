@@ -22,6 +22,8 @@ struct Material
 
 struct DirLight
 {
+	bool active;
+
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -31,6 +33,8 @@ struct DirLight
 
 struct PointLight
 {
+	bool active;
+
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -44,6 +48,8 @@ struct PointLight
 
 struct SpotLight
 {
+	bool active;
+
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -67,7 +73,6 @@ uniform Material fuMaterial;
 // --------------------------------------
 
 uniform DirLight DLight;
-uniform bool DLActive;
 
 #define MAX_PLIGHTS 16
 uniform PointLight PLight[MAX_PLIGHTS];
@@ -99,24 +104,35 @@ void main()
 
 
 	//directional light
-	if(DLActive)
+	if(DLight.active)
 	{
 		color += calcDirLight(DLight, viewDir);
-		//color = vec3(1.0, 0.0, 0.0);
 	}
+
 	//point lights
+	bool PLCheckActive = false;
 	for(int i = 0; i < PLnum; i++)
 	{
-		color += calcPointLight(PLight[i], viewDir);
+		if(PLight[i].active)
+		{
+			color += calcPointLight(PLight[i], viewDir);
+			if(!PLCheckActive) PLCheckActive = true;
+		}
 	}
 
 	//spotlights
+	bool SLCheckActive = false;
 	for(int i = 0; i < SLnum; i++)
-	{
-		color += calcSpotLight(SLight[i], viewDir);
+	{	
+		if(SLight[i].active) 
+		{
+			color += calcSpotLight(SLight[i], viewDir);
+			if(!SLCheckActive) SLCheckActive = true;
+		}
 	}
 	
-	if ((!DLActive) && (SLnum <= 0) && (PLnum <= 0))
+	
+	if ((!DLight.active) && (!SLCheckActive) && (!PLCheckActive))
 		color += vec3(texture(fuMaterial.tex_diffuse0, vTex));
 
 	//////////////////////////////////////////////
@@ -142,7 +158,6 @@ vec3 calcDirLight(DirLight light, vec3 viewDir)
 	vec3 specular = light.specular * spec * vec3(texture(fuMaterial.tex_specular0, vTex));
 		
 	return ambient + diffuse + specular;
-	//return vec3(1.0, 0.0, 0.0);
 }
 
 vec3 calcPointLight(PointLight light, vec3 viewDir)
@@ -174,9 +189,10 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 {
 	vec3 lightDir = normalize(light.pos - vPos);
 	float theta = dot(normalize(-light.dir), lightDir);
-	
+		
 	if(theta > light.outAngle)
 	{
+		
 		vec3 norm = normalize(vNormals);
 
 		vec3 ambient = light.ambient * vec3(texture(fuMaterial.tex_diffuse0, vTex));
@@ -203,7 +219,7 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 		diffuse *= attenuation;
 		specular *= attenuation;
 		
-		return ambient + diffuse + specular;
+		return diffuse + specular;
 	}
 	else
 	{
