@@ -12,21 +12,20 @@
 #include "Light.h"
 #include "Timer.h"
 #include "Model.h"
-
+#include "Object.h"
 
 #define SCR_WIDTH 1100
 #define SCR_HEIGHT 700
-
-#define NAME_TO_STR(name) (#name)
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void cursor_pos_callback(GLFWwindow*, double, double);
 void key_callback(GLFWwindow*, int, int, int, int);
 void processInput(GLFWwindow*);
 
+void drawScene(const Shader&);
+
 //Debug funs
 void shadersLogs(const std::vector<Shader*>&);
-
 
 using std::cout;
 
@@ -48,11 +47,7 @@ bool firstCursor = true;
 /////////////////////////////////////////
 // Lights
 
-
-//flashlight
-bool flActive = true;
-bool flFlicker = false;
-float flTimer = 0.f;
+bool flActive = false;
 
 /////////////////////////////////////////
 // MAIN
@@ -187,35 +182,13 @@ int main()
 
 	//plane V N T
 	const float planeVertices[] = {
-		-15.f, -0.502f, 15.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-		15.f, -.502f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		-15.f, -.502f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f,
+		-15.f, -.0f, 15.f, 0.f, 1.f, 0.f,	 0.f, 0.f,
+		15.f, -.0f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
+		-15.f, -.0f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f,
 
-		15.f, -.502f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		15.f, -.502f, -15.f, 0.f, 1.f, 0.f,    30.f, 30.f,
-		-15.f, -.502f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f
-	};
-
-	//grass V T
-	const float grassVertices[] = {
-		-0.5f, 0.5f, 0.f,   0.0f, 0.0f,
-		-0.5f, -0.5f, 0.f,  0.0f, 1.0f,
-		0.5f, -0.5f, 0.f,   1.0f, 1.0f,
-
-		-0.5f, 0.5f, 0.f,   0.0f, 0.0f,
-		0.5f, -0.5f, 0.f,   1.0f, 1.0f,
-		0.5f, 0.5f, 0.f,    1.0f, 0.0f,
-	};
-
-	//mirror V 
-	const float mirrorVertices[] = {
-		-0.25f, 0.0f, 0.f,
-		-0.25f, 1.0f, 0.f,
-		0.25f, 0.0f, 0.f,
-
-		-0.25f, 1.0f, 0.f,
-		0.25f, 0.0f, 0.f,
-		0.25f, 1.0f, 0.f
+		15.f, -.0f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
+		15.f, -.0f, -15.f, 0.f, 1.f, 0.f,    30.f, 30.f,
+		-15.f, -.0f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f
 	};
 
 	//quad (screen) V T
@@ -367,34 +340,13 @@ int main()
 		cout << "ERROR: Framebuffer status NOT_COMPLETE\n";
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	//shadow buffers
-	//----------------------------------
-	unsigned int FBOdepthmap;
-	glGenFramebuffers(1, &FBOdepthmap);
-	
-	unsigned int depthmap;
-	const unsigned int c_shadowwidth = 1024, c_shadowheight = 1024;
-	glGenTextures(1, &depthmap);
-	glBindTexture(GL_TEXTURE_2D, depthmap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, c_shadowwidth, c_shadowheight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthmap, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	////////////////////////////////////////
 	// Lights
 
 	DirectionalLight dLight;
 	dLight.setActive(true);
+	dLight.multDiffuse(1.5f);
 
 	PointLight pLight0(-5.f, 2.5f, 0.f);
 	pLight0.multAmbient(0.05f);
@@ -405,7 +357,6 @@ int main()
 	SpotLight sLight1(glm::vec3(5.0f, 1.5f, 0.0f));
 	SpotLight sLight2(-1.f, 0.5f, 4.5f, 0.25f, 0.f, -1.f);
 	SpotLight sLight3(1.f, 0.5f, 4.5f, -0.25f, 0.f, -1.f);
-
 
 	vector<SpotLight*> sLights
 	{
@@ -418,41 +369,97 @@ int main()
 		x->multAmbient(0.05f);
 		x->multDiffuse(2.f);
 		x->setRadius(50.f);
+		x->setActive(false);
 	}
 
 	sLight0.setActive(false);
 	sLight2.setDiffuse(glm::vec3(0.6f, 0.1f, 0.2f));
 	sLight3.setDiffuse(glm::vec3(0.1f, 0.2f, 0.7f));
+	sLight2.setSpecular(glm::vec3(0.6f, 0.1f, 0.2f));
+	sLight3.setSpecular(glm::vec3(0.1f, 0.2f, 0.7f));
+
+	////////////////////////////////////////
+	// Shadows
+
+	unsigned int FBOdepthmap;
+	glGenFramebuffers(1, &FBOdepthmap);
+
+	unsigned int depthmap;
+	const unsigned int c_shadowwidth = 1024, c_shadowheight = 1024;
+	glGenTextures(1, &depthmap);
+	glBindTexture(GL_TEXTURE_2D, depthmap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, c_shadowwidth, c_shadowheight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthmap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//light space
+	CamFPS lightCam(glm::vec3(2.0f, 3.0f, 1.0f), dLight.getDir(), glm::vec3(0.0f, 1.0f, 0.0f));
+	
 
 	////////////////////////////////////////
 	// Textures
-
-	//unsigned int tex0 = loadTex("..\\img\\container1.png");
-	//unsigned int tex0Spec = loadTex("..\\img\\container1_spec.png");
-	//unsigned int tex0Emiss = loadTex("..\\img\\container1_emiss.png");
-	//unsigned int flCookie = loadTex("..\\img\\cookie.png");
 
 	unsigned int texContainer0 = loadTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE);
 	unsigned int texContainer0Spec = loadTex("..\\img\\container1_spec.png", GL_REPEAT);
 	unsigned int texParquet0 = loadTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT);
 	unsigned int texParquet0Spec = loadTex("..\\img\\parquet0_spec.jpg", GL_REPEAT);
-	//unsigned int texGrass = loadTex("..\\img\\grass.png", GL_CLAMP_TO_EDGE);
 	//unsigned int texSkybox = loadCubemap("..\\img\\sky0", skyboxFaces);
 
 	////////////////////////////////////////
-	// Assets
+	// Assets and Meshes
 	
+	// Horse
 	Model horse0("..\\assets\\horse0\\Rocking Horse.obj", false);
 	
+	// Boxes
+	vector<Texture> boxTextures
+	{
+		loadTexTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\container1_spec.png", GL_CLAMP_TO_EDGE, TEXTURE_SPECULAR),
+	};
+	
+	Mesh box0Mesh(vertexDataToVertexVector(cube1vertices, sizeof(cube1vertices) / sizeof(float), VERTEX), boxTextures);
+	Object box1(box0Mesh);
+	Object box2(box0Mesh);
+
+	// Plane
+	vector<Texture> planeTextures
+	{
+		loadTexTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\parquet0_spec.jpg", GL_REPEAT, TEXTURE_SPECULAR),
+	};
+	
+	Mesh plane0Mesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeTextures);
+	Object plane0(plane0Mesh);
+
+	// Light cube
+	Mesh lightCubeMesh(vertexDataToVertexVector(cube2vertices, sizeof(cube1vertices) / sizeof(float), VERTEX_P_T));
+	Object lightCube0(box0Mesh);
+
 	////////////////////////////////////////
 	// Shaders
 
-	Shader shaderLights0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
-	Shader shaderLamp("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
+	Shader shaderLights0("..\\shaders\\Lighting0.vs", "..\\shaders\\Lighting0.fs");
+	Shader shaderSingleColor("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
+	Shader shaderLightSpace("..\\shaders\\LightSpace.vs", "..\\shaders\\LightSpace.fs");
+	Shader shaderScreenDepth("..\\shaders\\ScreenTexture.vs", "..\\shaders\\ScreenTexture.fs");
 
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shaderLights0);
-	shaders.push_back(&shaderLamp);
+	shaders.push_back(&shaderSingleColor);
+	shaders.push_back(&shaderLightSpace);
+	shaders.push_back(&shaderScreenDepth);
 
 	//interface blocks
 	unsigned int UBOmat;
@@ -478,26 +485,43 @@ int main()
 	shaderLights0.setInt("fuMaterial.tex_diffuse0", 0);
 	shaderLights0.setInt("fuMaterial.tex_specular0", 1);
 
-	//shaderLights0.setDLight(dLight);
+	shaderLights0.setDLight(dLight);
 	shaderLights0.setSLights(sLights);
 	shaderLights0.setPLights(pLight0);
 
-	//shaderReflect (reflection)
+	//shaderLightSpace
 	//-----------------------------------
+
+
+	//shaderScreenDepth
+	//-----------------------------------
+	
+	shaderScreenDepth.use();
+	shaderScreenDepth.setInt("screenTex", 0);
+
+	////////////////////////////////////////
+	// Static objects preparing
+
+	plane0.translate(glm::vec3(0.f, -0.502f, 0.f));
+
+	box1.translate(glm::vec3(-1.2f, 0.125f, 0.f));
+	box1.scale(glm::vec3(1.25f, 1.25f, 1.25f));
+	box1.rotateY(10);
+	
+	box2.translate(glm::vec3(1.2f, -0.25f, 0.f));
+	box2.scale(glm::vec3(.5f, .5f, .5f));
+	box2.rotateY(-30);
+
+	lightCube0.translate(sLight0.getPos());
+	lightCube0.rescale(0.05f);
 
 	////////////////////////////////////////
 	// Pre-Render
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	//depth
-	//-------------------------------------
 	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_LESS);
-	//glDepthFunc(GL_LESS);
-
-	//gamma correction
-	//--------------------------------------
+	
 	//glEnable(GL_FRAMEBUFFER_SRGB);
 
 	glEnable(GL_MULTISAMPLE);
@@ -505,30 +529,21 @@ int main()
 	////////////////////////////////////////
 	// RENDER
 	
-	bool firstTime = true;
+	bool firstFrame = true;
+	glfwSetTime(0);
 
 	//render cycle
 	//-----------------------------------
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 
-		////////////////////////////////////
-		// Set buffer
-		//glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
-
-		//states
-		glEnable(GL_DEPTH_TEST);
-
-		glClearColor(BLACK, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		////////////////////////////////////
-		if (firstTime)
-		{
-			glfwSetTime(0);
-			firstTime = false;
-		}
-
+		// Framebuffers
+	
+		
+		////////////////////////////////////
+		
 		float time = glfwGetTime();
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
@@ -545,88 +560,136 @@ int main()
 		glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &camView[0]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+		
 		////////////////////////////////////
 		// Drawing
 
-		glm::mat4 model = glm::mat4(1.f);
-		
-		//LIGHTS data (shaderLights0)
-		
-		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
-		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
-		float xMoveDir = cos(time * 1.75f) * deltaTime * 0.1f;
-		
+		glClearColor(BLACK, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		sLight0.movePos(glm::vec3(xMovePos, yMovePos, 0.f));
-		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
+		// Shadows
+		// ----------------------------------
 
+		// Light Space
 
-		shaderLights0.use();
-		shaderLights0.setSLights(sLight0);
+		float near_plane = 1.0f, far_plane = 7.5f;
+
+		glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
+		/*glm::mat4 lightView = glm::lookAt(glm::vec3(-2.f, 4.f, -1.f),
+			glm::vec3(0.f, 0.f, 0.f),
+			glm::vec3(0.f, 1.f, 0.f));*/
+		glm::mat4 lightView = lightCam.getView();
+		glm::mat4 lightSpace = lightProjection * lightView;
+
+		shaderLightSpace.use();
+		shaderLightSpace.setMat4("vuLightSpace", lightSpace);
+
+		glViewport(0, 0, c_shadowwidth, c_shadowheight);
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
+		
+		glClear(GL_DEPTH_BUFFER_BIT);
+		
+		// Writing to depthmap
+		// ------------------------
+
+		glm::mat4 model(1.f);
 
 		//plane
-		shaderLights0.setVec3("fuViewPos", camPos);
-		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
 
-		model = glm::mat4(1.f);
-		shaderLights0.setMat4("vuModel", model);
+		plane0.draw(shaderLightSpace);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texParquet0);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texParquet0Spec);
-		glBindVertexArray(VAOplane);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		//cubes
-		shaderLights0.setFloat("fuMaterial.shininess", 128.f);
-		
-		model = glm::mat4(1.f);
+		//cube 1
+		/*model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-1.2f, 0.f, 0.f));
 		model = glm::rotate(model, glm::radians(-20.f), glm::vec3(.0f, 1.f, .0f));
-		shaderLights0.setMat4("vuModel", model);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texContainer0);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texContainer0Spec);
+		shaderLightSpace.setMat4("vuModel", model);
 		glBindVertexArray(VAOcube);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, 36);*/
+		box1.draw(shaderLightSpace);
 
-		model = glm::mat4(1.f);
+		//cube2
+		/*model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(1.0f, -0.25f, 0.f));
 		model = glm::rotate(model, glm::radians(30.f), glm::vec3(.0f, 1.f, .0f));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-
-		shaderLights0.setMat4("vuModel", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		shaderLightSpace.setMat4("vuModel", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);*/
+		box2.draw(shaderLightSpace);
 
 		//horse
-		shaderLights0.setFloat("fuMaterial.shininess", 32.f);
-
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-0.15f, -0.55f, -0.2f));
 		model = glm::rotate(model, glm::radians(-40.f), glm::vec3(0.0f, 1.f, .0f));
 		model = glm::rotate(model, glm::radians(sin(time)) * 5.f, glm::vec3(.0f, 0.f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
 
-		shaderLights0.setMat4("vuModel", model);
-		horse0.draw(shaderLights0);
+		shaderLightSpace.setMat4("vuModel", model);
+
+		horse0.draw(shaderLightSpace);
 
 		//light cube
-		shaderLamp.use();
-
 		model = glm::mat4(1.f);
 		model = glm::translate(model, sLight0.getPos());
 		model = glm::scale(model, glm::vec3(0.04f, 0.04f, 0.04f));
 		model = glm::rotate(model, glm::radians(sin(time * 1.75f) * 8.5f), glm::vec3(0.f, 0.f, 1.f));
-
-		shaderLamp.setMat4("vuModel", model);
-
+		shaderLightSpace.setMat4("vuModel", model);
 		glBindVertexArray(VAOcube);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		//ending
+
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+		// Main framebuffer
+		// ----------------------------------------
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		shaderLights0.use();
+		shaderLights0.setVec3("fuViewPos", camPos);
+
+		//shadow map
+		shaderLights0.setMat4("vuLightSpace", lightSpace);
+		glActiveTexture(GL_TEXTURE0 + 5);
+		glBindTexture(GL_TEXTURE_2D, depthmap);
+		shaderLights0.setInt("shadowMap", 5);
+
+		//plane
+		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
+		plane0.draw(shaderLights0);
+
+		//cubes
+		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
+
+		//box1
+		box1.draw(shaderLights0);
+		
+		//box2
+		box2.draw(shaderLights0);
+
+		//horse
+		shaderLights0.setFloat("fuMaterial.shininess", 32.f);							// ƒŒ¡¿¬»“‹ –¿—œŒ«Õ¿¬¿Õ»≈ Ã¿“≈–»¿ÀŒ¬
+		
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-0.15f, -0.573f, -0.2f));
+		model = glm::rotate(model, glm::radians(-40.f), glm::vec3(0.0f, 1.f, .0f));
+		model = glm::rotate(model, glm::radians(sin(time)) * 5.f, glm::vec3(.0f, 0.f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
+		shaderLights0.setMat4("vuModel", model);
+		
+		horse0.draw(shaderLights0);
+
+		//light cube
+		
+		lightCube0.draw(shaderSingleColor);
+
+
+		/*shaderScreenDepth.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthmap);
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);*/
 
 		//postprocess
 		//----------------------------------
@@ -635,6 +698,33 @@ int main()
 
 		glBindVertexArray(0);
 		
+		////////////////////////////////////
+		// Events etc.
+		//////////////////
+
+		// LIGHTS data (shaderLights0)
+		// -----------------------------------
+
+		if (firstFrame)
+		{
+			glfwSetTime(0);
+			firstFrame = false;
+		}
+
+		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
+		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
+		float xMoveDir = cos(time * 1.75f) * deltaTime * 0.1f;
+
+		sLight0.movePos(glm::vec3(xMovePos, yMovePos, 0.f));
+		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
+
+		//Sunset??
+		//lightCam.moveDir(glm::vec3(0.f, sin(time * 0.45f) * deltaTime * 0.15f, 0.f));
+
+		lightCube0.translate(sLight0.getPos());
+		lightCube0.rotateZ(cos(time * 1.75f) * 0.1f);
+
+
 		////////////////////////////////////
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -652,7 +742,7 @@ int main()
 	glDeleteVertexArrays(1, &VAOplane);
 
 	shaderLights0.suicide();
-	shaderLamp.suicide();
+	shaderSingleColor.suicide();
 
 	glfwTerminate();
 	system("pause");
@@ -725,4 +815,9 @@ void shadersLogs(const std::vector<Shader*>& shaders)
 	{
 		cout << '\n' << x->getInfoLog();
 	}
+}
+
+void drawScene(const Shader& shader)
+{
+	
 }

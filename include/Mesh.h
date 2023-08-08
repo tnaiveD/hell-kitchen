@@ -20,16 +20,19 @@ using glm::mat4;
 
 /*
 *	Specify type of a vertex, which passed to f(<type>, Vertex)
-*
-*	V - vertices only.
-*	V_N - vertices + normals.
-*	V_T - vertices + textures.
-*	V_N_T - vertices + normals + textures.
+*	
+*	VERTEX - pos + normals + textures.
+*	VERTEX_P - pos only.
+*	VERTEX_P_N - pos + normals.
+*	VERTEX_P_T - pos + textures.
+*	
 */
 
 enum VertexType
 {
 	VERTEX = 1,
+	VERTEX_P,
+	VERTEX_P_N,
 	VERTEX_P_T
 };
 
@@ -38,16 +41,22 @@ struct Vertex
 	vec3 position;
 	vec3 normal;
 	vec2 texCoords;
+
+	vec3 tangent;
+	vec3 bitangent;
+	vector<unsigned> boneIDs;
+	vector<float> weights;
 };
 
 class VertexVector
 {
 public:
 
-	VertexVector(std::vector<Vertex>);
-	VertexVector(std::vector<Vertex>, VertexType);
+	VertexVector();
+	VertexVector(const std::vector<Vertex>& verticesVec, VertexType vertexType = VERTEX);
 
 	std::vector<Vertex> getVertexVector() const;
+	VertexType getVertexType() const;
 
 private:
 
@@ -68,8 +77,9 @@ enum TextureType
 struct Texture
 {
 	unsigned int id;
-	TextureType type;
 	string path;
+	TextureType type;
+
 };
 
 ////////////////////////////////////////
@@ -85,16 +95,22 @@ public:
 	// Type of vertexes stored in "vertices", see below enum "VertexType"
 	VertexType verticesType;
 
+	VertexVector vertexVec;
+
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 	unsigned int VAO;
 
-	// Vertices and textures, no indices (with further glDrawArrays call)
-	Mesh(vector<Vertex> vertices, vector<Texture> textures);
-	Mesh(vector<Vertex> vertices, Texture texture);
-
 	// Full-fledged vertex, drawing via glDrawElements
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+
+	// Vertices and textures, no indices (with further glDrawArrays call)
+	Mesh(const VertexVector& vertexVec, vector<Texture> textures);
+	Mesh(const VertexVector& vertexVec, Texture texture);
+	
+	// Single vertex vector
+	Mesh(const VertexVector& vertexVec);
+
 
 	// Loading texture stuff
 	void loadMeshTexture(const char* path, GLenum wrapMode, TextureType type);

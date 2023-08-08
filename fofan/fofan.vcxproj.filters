@@ -39,6 +39,9 @@
     <ClCompile Include="..\include\Light.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\Object.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CamFPS.h">
@@ -68,6 +71,9 @@
     <ClInclude Include="..\include\Light.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Object.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\Lights.fs">
@@ -86,6 +92,24 @@
       <Filter>Файлы ресурсов</Filter>
     </None>
     <None Include="..\shaders\SingleColor.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\LightSpace.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\LightSpace.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\ScreenTexture.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\ScreenTexture.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\Lighting0.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\Lighting0.vs">
       <Filter>Файлы ресурсов</Filter>
     </None>
   </ItemGroup>

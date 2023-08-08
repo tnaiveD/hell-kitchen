@@ -135,6 +135,7 @@
     <ClCompile Include="..\include\Light.cpp" />
     <ClCompile Include="..\include\Mesh.cpp" />
     <ClCompile Include="..\include\Model.cpp" />
+    <ClCompile Include="..\include\Object.cpp" />
     <ClCompile Include="..\include\Shader.cpp" />
     <ClCompile Include="..\include\stb_image.cpp" />
     <ClCompile Include="fofan.cpp" />
@@ -146,15 +147,22 @@
     <ClInclude Include="..\include\Light.h" />
     <ClInclude Include="..\include\Mesh.h" />
     <ClInclude Include="..\include\Model.h" />
+    <ClInclude Include="..\include\Object.h" />
     <ClInclude Include="..\include\Shader.h" />
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="..\include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\Lighting0.fs" />
+    <None Include="..\shaders\Lighting0.vs" />
     <None Include="..\shaders\Lights.fs" />
     <None Include="..\shaders\Lights.vs" />
+    <None Include="..\shaders\LightSpace.fs" />
+    <None Include="..\shaders\LightSpace.vs" />
     <None Include="..\shaders\Postprocess.fs" />
     <None Include="..\shaders\Postprocess.vs" />
+    <None Include="..\shaders\ScreenTexture.fs" />
+    <None Include="..\shaders\ScreenTexture.vs" />
     <None Include="..\shaders\SingleColor.fs" />
     <None Include="..\shaders\SingleColor.vs" />
   </ItemGroup>
