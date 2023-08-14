@@ -13,6 +13,7 @@
 #include "Timer.h"
 #include "Model.h"
 #include "Object.h"
+#include "Debug.h"
 
 #define SCR_WIDTH 1100
 #define SCR_HEIGHT 700
@@ -48,6 +49,11 @@ bool firstCursor = true;
 // Lights
 
 bool flActive = false;
+
+/////////////////////////////////////////
+// Shadows
+
+bool dirLightDepthDemo = false; // turn off with key M
 
 /////////////////////////////////////////
 // MAIN
@@ -345,13 +351,13 @@ int main()
 	// Lights
 
 	DirectionalLight dLight;
-	dLight.setActive(true);
 	dLight.multDiffuse(1.5f);
 
 	PointLight pLight0(-5.f, 2.5f, 0.f);
 	pLight0.multAmbient(0.05f);
 	pLight0.multDiffuse(2.f);
 	pLight0.setAttenuation(ATTENUATION20);
+	pLight0.setActive(false);
 
 	SpotLight sLight0(glm::vec3(0.0f, 1.5f, 0.0f));
 	SpotLight sLight1(glm::vec3(5.0f, 1.5f, 0.0f));
@@ -385,7 +391,7 @@ int main()
 	glGenFramebuffers(1, &FBOdepthmap);
 
 	unsigned int depthmap;
-	const unsigned int c_shadowwidth = 1024, c_shadowheight = 1024;
+	const unsigned int c_shadowwidth = 2048, c_shadowheight = 2048;
 	glGenTextures(1, &depthmap);
 	glBindTexture(GL_TEXTURE_2D, depthmap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, c_shadowwidth, c_shadowheight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -405,7 +411,6 @@ int main()
 
 	//light space
 	CamFPS lightCam(glm::vec3(2.0f, 3.0f, 1.0f), dLight.getDir(), glm::vec3(0.0f, 1.0f, 0.0f));
-	
 
 	////////////////////////////////////////
 	// Textures
@@ -416,36 +421,6 @@ int main()
 	unsigned int texParquet0Spec = loadTex("..\\img\\parquet0_spec.jpg", GL_REPEAT);
 	//unsigned int texSkybox = loadCubemap("..\\img\\sky0", skyboxFaces);
 
-	////////////////////////////////////////
-	// Assets and Meshes
-	
-	// Horse
-	Model horse0("..\\assets\\horse0\\Rocking Horse.obj", false);
-	
-	// Boxes
-	vector<Texture> boxTextures
-	{
-		loadTexTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE, TEXTURE_DIFFUSE),
-		loadTexTex("..\\img\\container1_spec.png", GL_CLAMP_TO_EDGE, TEXTURE_SPECULAR),
-	};
-	
-	Mesh box0Mesh(vertexDataToVertexVector(cube1vertices, sizeof(cube1vertices) / sizeof(float), VERTEX), boxTextures);
-	Object box1(box0Mesh);
-	Object box2(box0Mesh);
-
-	// Plane
-	vector<Texture> planeTextures
-	{
-		loadTexTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT, TEXTURE_DIFFUSE),
-		loadTexTex("..\\img\\parquet0_spec.jpg", GL_REPEAT, TEXTURE_SPECULAR),
-	};
-	
-	Mesh plane0Mesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeTextures);
-	Object plane0(plane0Mesh);
-
-	// Light cube
-	Mesh lightCubeMesh(vertexDataToVertexVector(cube2vertices, sizeof(cube1vertices) / sizeof(float), VERTEX_P_T));
-	Object lightCube0(box0Mesh);
 
 	////////////////////////////////////////
 	// Shaders
@@ -500,20 +475,56 @@ int main()
 	shaderScreenDepth.setInt("screenTex", 0);
 
 	////////////////////////////////////////
+	// Assets and Meshes
+
+	// Horse
+	Model rockingHorse("..\\assets\\horse0\\Rocking Horse.obj", false);
+	Object rocking_horse0(rockingHorse);
+
+	// Boxes
+	vector<Texture> boxTextures
+	{
+		loadTexTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\container1_spec.png", GL_CLAMP_TO_EDGE, TEXTURE_SPECULAR),
+	};
+
+	Mesh boxMesh(vertexDataToVertexVector(cube1vertices, sizeof(cube1vertices) / sizeof(float), VERTEX), boxTextures);
+	Object box0(boxMesh);
+	Object box1(boxMesh);
+
+	// Plane
+	vector<Texture> planeTextures
+	{
+		loadTexTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\parquet0_spec.jpg", GL_REPEAT, TEXTURE_SPECULAR),
+	};
+
+	Mesh plane0Mesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeTextures);
+	Object plane0(plane0Mesh);
+
+	// Light cube
+	Mesh lightCubeMesh(vertexDataToVertexVector(cube2vertices, sizeof(cube1vertices) / sizeof(float), VERTEX_P_T));
+	Object lightCube0(boxMesh);
+
+	////////////////////////////////////////
 	// Static objects preparing
 
 	plane0.translate(glm::vec3(0.f, -0.502f, 0.f));
 
-	box1.translate(glm::vec3(-1.2f, 0.125f, 0.f));
-	box1.scale(glm::vec3(1.25f, 1.25f, 1.25f));
-	box1.rotateY(10);
+	box0.translate(glm::vec3(-1.2f, 0.125f, 0.f));
+	box0.scale(glm::vec3(1.25f, 1.25f, 1.25f));
+	box0.rotateY(10);
 	
-	box2.translate(glm::vec3(1.2f, -0.25f, 0.f));
-	box2.scale(glm::vec3(.5f, .5f, .5f));
-	box2.rotateY(-30);
+	box1.translate(glm::vec3(1.2f, -0.25f, 0.f));
+	box1.scale(glm::vec3(.5f, .5f, .5f));
+	box1.rotateY(-30);
 
 	lightCube0.translate(sLight0.getPos());
 	lightCube0.rescale(0.05f);
+
+	rocking_horse0.translate(glm::vec3(-0.15f, -0.573f, -0.2f));
+	rocking_horse0.scale(glm::vec3(0.025f, 0.025f, 0.025f));
+	rocking_horse0.rotateY(-40.f);
 
 	////////////////////////////////////////
 	// Pre-Render
@@ -595,26 +606,13 @@ int main()
 		glm::mat4 model(1.f);
 
 		//plane
-
 		plane0.draw(shaderLightSpace);
 
 		//cube 1
-		/*model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-1.2f, 0.f, 0.f));
-		model = glm::rotate(model, glm::radians(-20.f), glm::vec3(.0f, 1.f, .0f));
-		shaderLightSpace.setMat4("vuModel", model);
-		glBindVertexArray(VAOcube);
-		glDrawArrays(GL_TRIANGLES, 0, 36);*/
-		box1.draw(shaderLightSpace);
+		box0.draw(shaderLightSpace);
 
 		//cube2
-		/*model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(1.0f, -0.25f, 0.f));
-		model = glm::rotate(model, glm::radians(30.f), glm::vec3(.0f, 1.f, .0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		shaderLightSpace.setMat4("vuModel", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);*/
-		box2.draw(shaderLightSpace);
+		box1.draw(shaderLightSpace);
 
 		//horse
 		model = glm::mat4(1.f);
@@ -624,17 +622,12 @@ int main()
 		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
 
 		shaderLightSpace.setMat4("vuModel", model);
-
-		horse0.draw(shaderLightSpace);
+		
+		rocking_horse0.draw(shaderLightSpace);
 
 		//light cube
-		model = glm::mat4(1.f);
-		model = glm::translate(model, sLight0.getPos());
-		model = glm::scale(model, glm::vec3(0.04f, 0.04f, 0.04f));
-		model = glm::rotate(model, glm::radians(sin(time * 1.75f) * 8.5f), glm::vec3(0.f, 0.f, 1.f));
-		shaderLightSpace.setMat4("vuModel", model);
-		glBindVertexArray(VAOcube);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		lightCube0.draw(shaderLightSpace);
 
 		//ending
 
@@ -663,33 +656,27 @@ int main()
 		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
 
 		//box1
-		box1.draw(shaderLights0);
+		box0.draw(shaderLights0);
 		
 		//box2
-		box2.draw(shaderLights0);
+		box1.draw(shaderLights0);
 
 		//horse
 		shaderLights0.setFloat("fuMaterial.shininess", 32.f);							// ƒŒ¡¿¬»“‹ –¿—œŒ«Õ¿¬¿Õ»≈ Ã¿“≈–»¿ÀŒ¬
+		rocking_horse0.draw(shaderLights0);
 		
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-0.15f, -0.573f, -0.2f));
-		model = glm::rotate(model, glm::radians(-40.f), glm::vec3(0.0f, 1.f, .0f));
-		model = glm::rotate(model, glm::radians(sin(time)) * 5.f, glm::vec3(.0f, 0.f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
-		shaderLights0.setMat4("vuModel", model);
-		
-		horse0.draw(shaderLights0);
-
 		//light cube
-		
 		lightCube0.draw(shaderSingleColor);
 
-
-		/*shaderScreenDepth.use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthmap);
-		glBindVertexArray(quadVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);*/
+		//show depth map 
+		if (dirLightDepthDemo)
+		{
+			shaderScreenDepth.use();
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, depthmap);
+			glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		//postprocess
 		//----------------------------------
@@ -698,18 +685,33 @@ int main()
 
 		glBindVertexArray(0);
 		
-		////////////////////////////////////
-		// Events etc.
+		//////////////////////////////////////
+		// Events
 		//////////////////
-
-		// LIGHTS data (shaderLights0)
-		// -----------------------------------
 
 		if (firstFrame)
 		{
 			glfwSetTime(0);
+			time = 0;
 			firstFrame = false;
 		}
+
+		// LIGHTS data (shaderLights0)
+		// -----------------------------------
+
+		auto k = cos(time * 0.25f) * 0.5f + 0.5f;
+
+		dLight.setDiffuse(glm::vec3(1.f) * k);
+		
+		std::cerr << "Time: " << glfwGetTime() << 
+			". A = {" << vec3ToString(dLight.getAmbient()) <<
+			"}, D = {" <<  vec3ToString(dLight.getDiffuse()) << "}, K = " << k << "\n";
+		
+		shaderLights0.use();
+		shaderLights0.setDLight(dLight);
+
+		// Smth changes
+		// -----------------------------------
 
 		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
 		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
@@ -724,6 +726,7 @@ int main()
 		lightCube0.translate(sLight0.getPos());
 		lightCube0.rotateZ(cos(time * 1.75f) * 0.1f);
 
+		rocking_horse0.rotateZ(cos(time * 1.5f) * deltaTime * 6.f);
 
 		////////////////////////////////////
 		glfwSwapBuffers(window);
@@ -781,11 +784,21 @@ void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int modes) {
 
 	//flashlight
-	if ((key == GLFW_KEY_L) && (action == GLFW_PRESS)) {
+	if ((key == GLFW_KEY_L) && (action == GLFW_PRESS)) 
+	{
 		if (flActive)
 			flActive = false;
 		else
 			flActive = true;
+	}
+
+	//dir light depth demo
+	if ((key == GLFW_KEY_M) && (action == GLFW_PRESS))
+	{
+		if (dirLightDepthDemo)
+			dirLightDepthDemo = false;
+		else
+			dirLightDepthDemo = true;
 	}
 }
 

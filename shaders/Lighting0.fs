@@ -214,7 +214,7 @@ vec3 calcPointLight(PointLight light, vec3 viewDir)
 	diffuse *= attenuation;
 	specular *= attenuation;
 
-	return ambient + diffuse + specular;
+	return ambient + (diffuse + specular);
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 viewDir)
@@ -251,7 +251,9 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 		diffuse *= attenuation;
 		specular *= attenuation;
 		
-		return diffuse + specular;
+		float shadow = 1 - calcShadow(fs_in.lightSpacePos, lightDir);
+
+		return (diffuse + specular) * (1 - shadow);
 	}
 	else
 	{
@@ -270,10 +272,22 @@ float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 	float closestDepth = texture(shadowMap, projectionPos.xy).r;
 	float currentDepth = projectionPos.z;
 
-	float bias = max(0.015 * (1 - dot(fs_in.normal, lightDir)), 0.005);
+	float bias = max(0.005 * (1 - dot(fs_in.normal, lightDir)), 0.005);
 	//float bias = 0.005;
 
-	float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;  
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int i = -1; i <= 1; i++)
+	{
+		for(int j = -1; j <= 1; j++)
+		{
+			float pcfDepth = texture(shadowMap, projectionPos.xy + vec2(i, j) * texelSize).r;
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+		}
+	}
 
+	//shadow /= 9;
+
+	
 	return shadow;
 }

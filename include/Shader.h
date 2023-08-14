@@ -22,7 +22,7 @@ public:
 	Shader();
 	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* GeometrySourcePath = NULL);
 	
-	void use();
+	void use() const;
 	
 	//set uniforms
 	void setBool(const std::string& name, bool) const;

@@ -116,7 +116,7 @@ public:
 	void loadMeshTexture(const char* path, GLenum wrapMode, TextureType type);
 
 	// Draw
-	void draw(Shader& shader);
+	void draw(const Shader& shader);
 
 private:
 
@@ -129,6 +129,7 @@ private:
 
 // Pass vertices data and one of VERTEX above to convert
 vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertexType);
+
 
 /////////////////////////////////////////
 // Texture loading

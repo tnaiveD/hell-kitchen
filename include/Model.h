@@ -19,7 +19,7 @@ class Model
 public:
 
 	Model(const string&, bool);
-	void draw(Shader&);
+	void draw(const Shader&);
 
 	std::vector<Mesh> meshes;
 

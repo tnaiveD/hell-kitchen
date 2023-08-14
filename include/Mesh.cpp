@@ -45,16 +45,17 @@ Mesh::Mesh(const VertexVector& vertexVec, vector<Texture> textures)
 }
 
 // Vertices and single texture
-Mesh::Mesh(const VertexVector& vertexVec)
+Mesh::Mesh(const VertexVector& vertexVec, Texture texture)
 {
 	vertices = vertexVec.getVertexVector();
 	this->vertexVec = vertexVec;
+	textures.push_back(texture);
 
 	setupMesh();
 }
 
 // No textures
-Mesh::Mesh(const VertexVector& vertexVec, Texture texture)
+Mesh::Mesh(const VertexVector& vertexVec)
 {
 	vertices = vertexVec.getVertexVector();
 	this->vertexVec = vertexVec;
@@ -110,7 +111,7 @@ void Mesh::setupMesh()
 }
 
 
-void Mesh::draw(Shader& shader)
+void Mesh::draw(const Shader& shader)
 {
 	unsigned int diffuseNr = 0;
 	unsigned int specularNr = 0;

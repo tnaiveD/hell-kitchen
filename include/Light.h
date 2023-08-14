@@ -2,6 +2,8 @@
 #define LIGHT_H
 
 #include <glm\glm.hpp>
+#include <glm\vector_relational.hpp>
+
 #include <vector>
 #include "Timer.h"
 
@@ -62,6 +64,10 @@ public:
 	void multAmbient(float k);
 	void multDiffuse(float k);
 	void multSpecular(float k);
+
+	void addToAmbient(float k);
+	void addToDiffuse(float k);
+	void addToSpecular(float k);
 
 	//Get
 	glm::vec3 getAmbient() const;

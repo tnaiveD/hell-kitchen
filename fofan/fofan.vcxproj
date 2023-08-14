@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CamFPS.h" />
+    <ClInclude Include="..\include\Debug.h" />
     <ClInclude Include="..\include\gl.h" />
     <ClInclude Include="..\include\GLFW\glfw3.h" />
     <ClInclude Include="..\include\Light.h" />

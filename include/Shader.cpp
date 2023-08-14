@@ -141,7 +141,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, con
 	wrongUniforms.clear();
 }
 
-void Shader::use() {
+void Shader::use() const {
 	glUseProgram(id);
 }
 

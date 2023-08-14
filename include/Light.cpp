@@ -11,16 +11,40 @@ Light::Light() : ambient(AMBIENT_DEFAULT),
 		active(true) {};
 
 //Set
-void Light::setAmbient(glm::vec3 ambient) { this->ambient = ambient; }
-void Light::setDiffuse(glm::vec3 diffuse) { this->diffuse = diffuse; }
+void Light::setAmbient(glm::vec3 ambient) 
+{ 
+	this->ambient = ambient;
+}
+
+void Light::setDiffuse(glm::vec3 diffuse) 
+{
+	if (glm::all(glm::lessThan(diffuse, ambient)))
+	{
+		this->diffuse = ambient;
+		return;
+	}
+	this->diffuse = diffuse;
+}
+
 void Light::setSpecular(glm::vec3 specular) { this->specular = specular; }
+
 void Light::setAttenuation(glm::vec3 attenuation) { this->attenuation = attenuation; }
+
 void Light::setActive(bool state) { this->active = state; }
 
 //Modify
-void Light::multAmbient(float k) { this->ambient *= k; }
-void Light::multDiffuse(float k) { this->diffuse *= k; }
-void Light::multSpecular(float k) { this->specular *= k; }
+void Light::multAmbient(float k) { ambient *= k; }
+
+void Light::multDiffuse(float k) 
+{ 
+	setDiffuse(getDiffuse() * k); 
+}
+
+void Light::multSpecular(float k) { specular *= k; }
+
+void Light::addToAmbient(float k) { ambient += k; };
+void Light::addToDiffuse(float k) { setDiffuse(diffuse + k); };
+void Light::addToSpecular(float k) { specular += k; };
 
 //Get
 glm::vec3 Light::getAmbient() const { return this->ambient; }

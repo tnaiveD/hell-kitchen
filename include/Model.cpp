@@ -5,7 +5,7 @@ Model::Model(const string& path, bool gamma = false) : gammaCorrection(gamma)
 	loadModel(path);
 }
 
-void Model::draw(Shader& shader)
+void Model::draw(const Shader& shader)
 {
 	for (int i = 0; i < meshes.size(); i++)
 	{

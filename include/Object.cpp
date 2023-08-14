@@ -9,26 +9,32 @@ Object::Object()
 	pos = glm::vec3(0.f, 0.f, 0.f);
 	angles = glm::vec3(0.f, 0.f, 0.f);
 	scope = glm::vec3(1.f, 1.f, 1.f);
+	model = glm::mat4(1.f);
 }
 
-Object::Object(std::vector<Mesh>& meshes, glm::vec3 pos) : Object()
+Object::Object(const Model& model) : Object()
+{
+	this->meshes = model.meshes;
+}
+
+Object::Object(const std::vector<Mesh>& meshes, glm::vec3 pos) : Object()
 {
 	translate(pos);
 	this->meshes = meshes;
 }
 
-Object::Object(std::vector<Mesh>& meshes) : Object()
+Object::Object(const std::vector<Mesh>& meshes) : Object()
 {	
 	this->meshes = meshes;
 }
 
-Object::Object(Mesh& mesh, glm::vec3 pos) : Object()
+Object::Object(const Mesh& mesh, glm::vec3 pos) : Object()
 {
 	meshes.push_back(mesh);
 	translate(pos);
 }
 
-Object::Object(Mesh& mesh) : Object()
+Object::Object(const Mesh& mesh) : Object()
 {
 	meshes.push_back(mesh);
 }
@@ -111,7 +117,7 @@ void Object::rotateZ(float angle)
 	else
 		if (angles.z < -359)
 		{
-			angles.z = static_cast<int>(angles.z) % 360;
+			angles.z = (static_cast<int>(angles.z) % 360) * (-1);
 		}
 	updateModelMatrix();
 }

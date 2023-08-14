@@ -25,10 +25,11 @@ class Object
 public:
 
 	Object();
-	Object(std::vector<Mesh>& meshes, glm::vec3 pos);
-	Object(std::vector<Mesh>& meshes);
-	Object(Mesh& mesh, glm::vec3 pos);
-	Object(Mesh& mesh);
+	Object(const Model& model);
+	Object(const std::vector<Mesh>& meshes, glm::vec3 pos);
+	Object(const std::vector<Mesh>& meshes);
+	Object(const Mesh& mesh, glm::vec3 pos);
+	Object(const Mesh& mesh);
 
 	////////////////////////////////
 	// Get
