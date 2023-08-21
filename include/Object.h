@@ -33,19 +33,22 @@ public:
 
 	////////////////////////////////
 	// Get
+
 	glm::vec3 getPos() const;
 	glm::mat4 getModel() const;
 
 	////////////////////////////////
 	// Transforms
-	void translate(glm::vec3 coords); // pos setter
+
+	void translate(glm::vec3 coords);
+	void translate(float x, float y, float z);
 	void rotateX(float angle);
 	void rotateY(float angle);
 	void rotateZ(float angle);
 	void scale(glm::vec3 scope);
 	
 	// ...
-	void move();
+	void move(float x, float y, float z);
 	void rescale(float);
 	
 	////////////////////////////////

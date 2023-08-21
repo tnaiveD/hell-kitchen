@@ -136,6 +136,7 @@
     <ClCompile Include="..\include\Mesh.cpp" />
     <ClCompile Include="..\include\Model.cpp" />
     <ClCompile Include="..\include\Object.cpp" />
+    <ClCompile Include="..\include\Scene.cpp" />
     <ClCompile Include="..\include\Shader.cpp" />
     <ClCompile Include="..\include\stb_image.cpp" />
     <ClCompile Include="fofan.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="..\include\Mesh.h" />
     <ClInclude Include="..\include\Model.h" />
     <ClInclude Include="..\include\Object.h" />
+    <ClInclude Include="..\include\Scene.h" />
     <ClInclude Include="..\include\Shader.h" />
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="..\include\Timer.h" />

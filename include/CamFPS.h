@@ -23,6 +23,9 @@ public:
 	void moveBack();
 	void moveRight();
 	void moveLeft();
+	void moveUp();
+	void moveDown();
+
 	void moveDir(glm::vec3);
 
 	glm::mat4& getView();

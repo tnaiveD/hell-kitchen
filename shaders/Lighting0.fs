@@ -286,7 +286,7 @@ float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 		}
 	}
 
-	//shadow /= 9;
+	shadow /= 9;
 
 	
 	return shadow;

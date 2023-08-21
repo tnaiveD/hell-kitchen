@@ -58,23 +58,35 @@ void Object::translate(glm::vec3 coords)
 	updateModelMatrix();
 }
 
+void Object::translate(float x, float y, float z)
+{
+	pos.x = x;
+	pos.y = y;
+	pos.z = z;
+	updateModelMatrix();
+}
+
 void Object::scale(glm::vec3 scope)
 {
-	this->scope *= scope;
+	this->scope = scope;
 	updateModelMatrix();
 }
 
 ////////////////////////////////////
 // Transformations
 
-void Object::move() 
+void Object::move(float x, float y, float z) 
 {
-	
+	pos.x += x;
+	pos.y += y;
+	pos.z += z;
+	updateModelMatrix();
 }
 
 void Object::rescale(float k)
 {
 	scope *= k;
+	updateModelMatrix();
 }
 
 void Object::rotateX(float angle)

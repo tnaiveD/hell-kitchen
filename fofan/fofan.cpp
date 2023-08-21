@@ -14,6 +14,7 @@
 #include "Model.h"
 #include "Object.h"
 #include "Debug.h"
+#include "Scene.h"
 
 #define SCR_WIDTH 1100
 #define SCR_HEIGHT 700
@@ -53,7 +54,7 @@ bool flActive = false;
 /////////////////////////////////////////
 // Shadows
 
-bool dirLightDepthDemo = false; // turn off with key M
+bool dirLightDepthDemo = false; // turn on with key M
 
 /////////////////////////////////////////
 // MAIN
@@ -188,13 +189,13 @@ int main()
 
 	//plane V N T
 	const float planeVertices[] = {
-		-15.f, -.0f, 15.f, 0.f, 1.f, 0.f,	 0.f, 0.f,
-		15.f, -.0f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		-15.f, -.0f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f,
+		-10.f, -.0f, 10.f, 0.f, 1.f, 0.f,	 0.f, 0.f,
+		10.f, -.0f, 10.f, 0.f, 1.f, 0.f,     10.f, 0.f,
+		-10.f, -.0f, -10.f, 0.f, 1.f, 0.f,   0.f, 10.f,
 
-		15.f, -.0f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		15.f, -.0f, -15.f, 0.f, 1.f, 0.f,    30.f, 30.f,
-		-15.f, -.0f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f
+		10.f, -.0f, 10.f, 0.f, 1.f, 0.f,     10.f, 0.f,
+		10.f, -.0f, -10.f, 0.f, 1.f, 0.f,    10.f, 10.f,
+		-10.f, -.0f, -10.f, 0.f, 1.f, 0.f,   0.f, 10.f
 	};
 
 	//quad (screen) V T
@@ -352,9 +353,10 @@ int main()
 
 	DirectionalLight dLight;
 	dLight.multDiffuse(1.5f);
+	dLight.multAmbient(0.5f);
 
 	PointLight pLight0(-5.f, 2.5f, 0.f);
-	pLight0.multAmbient(0.05f);
+	pLight0.multAmbient(0.25f);
 	pLight0.multDiffuse(2.f);
 	pLight0.setAttenuation(ATTENUATION20);
 	pLight0.setActive(false);
@@ -491,6 +493,7 @@ int main()
 	Mesh boxMesh(vertexDataToVertexVector(cube1vertices, sizeof(cube1vertices) / sizeof(float), VERTEX), boxTextures);
 	Object box0(boxMesh);
 	Object box1(boxMesh);
+	Object box2(boxMesh);
 
 	// Plane
 	vector<Texture> planeTextures
@@ -510,6 +513,7 @@ int main()
 	// Static objects preparing
 
 	plane0.translate(glm::vec3(0.f, -0.502f, 0.f));
+	plane0.rescale(0.5f);
 
 	box0.translate(glm::vec3(-1.2f, 0.125f, 0.f));
 	box0.scale(glm::vec3(1.25f, 1.25f, 1.25f));
@@ -519,12 +523,25 @@ int main()
 	box1.scale(glm::vec3(.5f, .5f, .5f));
 	box1.rotateY(-30);
 
+	box2.translate(1.2f, 4.f, 0.f);
+	box2.rescale(0.2f);
+
 	lightCube0.translate(sLight0.getPos());
 	lightCube0.rescale(0.05f);
 
 	rocking_horse0.translate(glm::vec3(-0.15f, -0.573f, -0.2f));
 	rocking_horse0.scale(glm::vec3(0.025f, 0.025f, 0.025f));
 	rocking_horse0.rotateY(-40.f);
+
+	//////////////////////////////////////////////
+	// Scene
+
+	Scene sceneMain;
+	sceneMain.add(&plane0);
+	sceneMain.add(&box1);
+	sceneMain.add(&box2);
+	sceneMain.add(&lightCube0);
+	sceneMain.add(&rocking_horse0);
 
 	////////////////////////////////////////
 	// Pre-Render
@@ -545,9 +562,13 @@ int main()
 
 	//render cycle
 	//-----------------------------------
-	while (!glfwWindowShouldClose(window)) {
-		processInput(window);
+	
+	Timer timerDebug;
+	timerDebug.start();
 
+	while (!glfwWindowShouldClose(window)) 
+	{
+		processInput(window);
 
 		////////////////////////////////////
 		// Framebuffers
@@ -555,6 +576,7 @@ int main()
 		
 		////////////////////////////////////
 		
+
 		float time = glfwGetTime();
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
@@ -605,32 +627,26 @@ int main()
 
 		glm::mat4 model(1.f);
 
-		//plane
-		plane0.draw(shaderLightSpace);
+		sceneMain.draw(shaderLightSpace);
 
-		//cube 1
-		box0.draw(shaderLightSpace);
+		////plane
+		//plane0.draw(shaderLightSpace);
+		//
+		////cube 1
+		//box0.draw(shaderLightSpace);
 
-		//cube2
-		box1.draw(shaderLightSpace);
+		////cube2
+		//box1.draw(shaderLightSpace);
 
-		//horse
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-0.15f, -0.55f, -0.2f));
-		model = glm::rotate(model, glm::radians(-40.f), glm::vec3(0.0f, 1.f, .0f));
-		model = glm::rotate(model, glm::radians(sin(time)) * 5.f, glm::vec3(.0f, 0.f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
+		//box2.draw(shaderLightSpace);
 
-		shaderLightSpace.setMat4("vuModel", model);
-		
-		rocking_horse0.draw(shaderLightSpace);
+		////horse
+		//rocking_horse0.draw(shaderLightSpace);
 
-		//light cube
-		
-		lightCube0.draw(shaderLightSpace);
+		////light cube
+		//lightCube0.draw(shaderLightSpace);
 
 		//ending
-
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 		// Main framebuffer
@@ -648,30 +664,35 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, depthmap);
 		shaderLights0.setInt("shadowMap", 5);
 
-		//plane
-		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
-		plane0.draw(shaderLights0);
 
-		//cubes
-		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
+		sceneMain.draw(shaderLights0);
 
-		//box1
-		box0.draw(shaderLights0);
-		
-		//box2
-		box1.draw(shaderLights0);
+		////plane
+		//plane0.draw(shaderLights0);
 
-		//horse
-		shaderLights0.setFloat("fuMaterial.shininess", 32.f);							// ƒŒ¡¿¬»“‹ –¿—œŒ«Õ¿¬¿Õ»≈ Ã¿“≈–»¿ÀŒ¬
-		rocking_horse0.draw(shaderLights0);
-		
-		//light cube
-		lightCube0.draw(shaderSingleColor);
+		////cubes
+		//shaderLights0.setFloat("fuMaterial.shininess", 256.f);
+
+		////boxes
+		//box0.draw(shaderLights0);
+		//
+		//box1.draw(shaderLights0);
+
+		//box2.draw(shaderLights0);
+
+		////horse
+		//shaderLights0.setFloat("fuMaterial.shininess", 32.f);			// ƒŒ¡¿¬»“‹ –¿—œŒ«Õ¿¬¿Õ»≈ Ã¿“≈–»¿ÀŒ¬
+		//rocking_horse0.draw(shaderLights0);
+		//
+		////light cube
+		//lightCube0.draw(shaderSingleColor);
 
 		//show depth map 
 		if (dirLightDepthDemo)
 		{
 			shaderScreenDepth.use();
+			shaderScreenDepth.setFloat("nearPlane", near_plane);
+			shaderScreenDepth.setFloat("farPlane", far_plane);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, depthmap);
 			glBindVertexArray(quadVAO);
@@ -680,14 +701,14 @@ int main()
 
 		//postprocess
 		//----------------------------------
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindVertexArray(0);
 		
-		//////////////////////////////////////
+		////////////////////////////////////////
 		// Events
-		//////////////////
+		////////////////////
 
 		if (firstFrame)
 		{
@@ -696,22 +717,55 @@ int main()
 			firstFrame = false;
 		}
 
-		// LIGHTS data (shaderLights0)
-		// -----------------------------------
+		// Sunset
+		// --------------------------------------------------
 
-		auto k = cos(time * 0.25f) * 0.5f + 0.5f;
+		float k = sin(time * 0.25f) * 0.5f + 0.5f;
+		glm::vec3 nightDiffuse = glm::vec3(DIFFUSE_DEFAULT) * k;
+		glm::vec3 nightAmbient = glm::vec3(AMBIENT_DEFAULT);
+		glm::vec3 nightSpecular = glm::vec3(SPECULAR_DEFAULT);
 
-		dLight.setDiffuse(glm::vec3(1.f) * k);
+		//evening begin
+		float _magic = 0.5f;      // night/day time range
+
+		float blueInNight = 0.3f; // 0f .. 1f blue impact
+		float redInDay = 0.5f;	  // below
+		float greenInDay = 0.2f;  // below
 		
-		std::cerr << "Time: " << glfwGetTime() << 
-			". A = {" << vec3ToString(dLight.getAmbient()) <<
-			"}, D = {" <<  vec3ToString(dLight.getDiffuse()) << "}, K = " << k << "\n";
-		
+		if ((k < _magic) && (k > -_magic))
+		{
+			float blue = _magic - k;
+			nightDiffuse.z += blue * blueInNight;
+			nightAmbient.z += blue * blueInNight;
+		}
+		else
+		{
+			float red = (k - _magic) * redInDay;
+			float green = (k - _magic) * greenInDay;
+			nightDiffuse.r += red;
+			nightDiffuse.g += green;
+		}
+
+		dLight.setDiffuse(nightDiffuse);
+		dLight.setAmbient(nightAmbient);
+
+		auto tmp_elapsed = timerDebug.Elapsed();
+
+		if(tmp_elapsed % 50 == 0)
+		{
+			std::cerr << "Time: " << tmp_elapsed <<
+				". A = {" << vec3ToString(dLight.getAmbient()) <<
+				"}, D = {" << vec3ToString(dLight.getDiffuse()) << "}, K = " << k << "\n";
+			
+		}
+
 		shaderLights0.use();
 		shaderLights0.setDLight(dLight);
 
-		// Smth changes
-		// -----------------------------------
+		lightCam.moveDir(glm::vec3(0.f, sin(time * .1f) * deltaTime * .03f, 0.f));
+
+		// Smth changes (objects transformations)
+		// --------------------------------------------------
 
 		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
 		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
@@ -720,18 +774,20 @@ int main()
 		sLight0.movePos(glm::vec3(xMovePos, yMovePos, 0.f));
 		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
 
-		//Sunset??
-		//lightCam.moveDir(glm::vec3(0.f, sin(time * 0.45f) * deltaTime * 0.15f, 0.f));
-
 		lightCube0.translate(sLight0.getPos());
 		lightCube0.rotateZ(cos(time * 1.75f) * 0.1f);
 
 		rocking_horse0.rotateZ(cos(time * 1.5f) * deltaTime * 6.f);
 
+		box2.move(0, -((9.8f * 0.1f) * deltaTime), 0);
+
 		////////////////////////////////////
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	timerDebug.end();
 
 	//shader uniforms log
 	shadersLogs(shaders);

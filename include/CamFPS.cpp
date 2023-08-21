@@ -118,6 +118,16 @@ void CamFPS::moveRight() {
 	setPos(pos + glm::normalize(glm::cross(dir, up)) * speed * deltaTime);
 }
 
+void CamFPS::moveUp()
+{
+	setPos(pos + glm::vec3(0.f, speed * deltaTime, 0.f));
+}
+
+void CamFPS::moveDown()
+{
+	setPos(pos - glm::vec3(0.f, speed * deltaTime, 0.f));
+}
+
 glm::mat4& CamFPS::getView() {
 	return view;
 }

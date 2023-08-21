@@ -11,7 +11,6 @@
 // <Type> to <Type> transform
 //////////////////////////////
 
-
 /*
 
 
@@ -23,7 +22,6 @@ std::string vec3ToString(glm::vec3 vec)
 		std::to_string(vec.y) + ", " +
 		std::to_string(vec.z) + "]");
 };
-
 
 
 #endif // !DEBUG_H
