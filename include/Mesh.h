@@ -116,7 +116,7 @@ public:
 	void loadMeshTexture(const char* path, GLenum wrapMode, TextureType type);
 
 	// Draw
-	void draw(const Shader& shader);
+	void draw(const Shader& shader) const;
 
 private:
 

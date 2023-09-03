@@ -111,7 +111,7 @@ void Mesh::setupMesh()
 }
 
 
-void Mesh::draw(const Shader& shader)
+void Mesh::draw(const Shader& shader) const
 {
 	unsigned int diffuseNr = 0;
 	unsigned int specularNr = 0;

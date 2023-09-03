@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <unordered_set>
+#include <vector>
 
 #include "Object.h"
 #include "Shader.h"
@@ -14,7 +15,7 @@ public:
 	
 	void add(Object* object);
 
-	void draw(Shader& shader);
+	void draw(const Shader& shader);
 
 private:
 	
@@ -24,10 +25,6 @@ private:
 	glm::vec3 pos;
 
 };
-
-
-
-
 
 
 #endif

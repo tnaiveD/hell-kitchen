@@ -121,7 +121,6 @@ uniform sampler2D shadowMap;
 uniform vec3 fuViewPos;
 
 
-
 //////////////////////////////////////////
 // MAIN
 /////////////////////
@@ -161,9 +160,8 @@ void main()
 		}
 	}
 	
-	
 	if ((!DLight.active) && (!SLCheckActive) && (!PLCheckActive))
-		color += vec3(texture(fuMaterial.tex_diffuse0, fs_in.tex));
+		color += DLight.ambient * vec3(texture(fuMaterial.tex_diffuse0, fs_in.tex));
 
 	//////////////////////////////////////////////
 	
@@ -259,7 +257,6 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 	{
 		return light.ambient * vec3(texture(fuMaterial.tex_diffuse0, fs_in.tex));	
 	}
-
 }
 
 float calcShadow(vec4 lightSpacePos, vec3 lightDir)
@@ -272,11 +269,11 @@ float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 	float closestDepth = texture(shadowMap, projectionPos.xy).r;
 	float currentDepth = projectionPos.z;
 
-	float bias = max(0.005 * (1 - dot(fs_in.normal, lightDir)), 0.005);
-	//float bias = 0.005;
-
+	//float bias = max(0.00492 * (1.0 - dot(fs_in.normal, lightDir)), 0.004);
+	float bias = 0.00195;
+	
 	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	vec2 texelSize = 2.0 / textureSize(shadowMap, 0);
 	for(int i = -1; i <= 1; i++)
 	{
 		for(int j = -1; j <= 1; j++)
@@ -285,9 +282,8 @@ float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
 		}
 	}
-
-	shadow /= 9;
-
+	
+	shadow /= 9; // 9
 	
 	return shadow;
 }

@@ -2,10 +2,10 @@
 
 void Scene::add(Object* object)
 {
-	objects.insert(object);
+	//objects.insert(object);
 }
-
-void Scene::draw(Shader& shader)
+ 
+void Scene::draw(const Shader& shader)
 {
 	for (const auto& x : objects)
 	{

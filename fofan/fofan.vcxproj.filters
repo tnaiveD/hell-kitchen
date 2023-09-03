@@ -121,5 +121,14 @@
     <None Include="..\shaders\Lighting0.vs">
       <Filter>Файлы ресурсов</Filter>
     </None>
+    <None Include="..\shaders\VisualNormals.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\VisualNormals.gs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\shaders\VisualNormals.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
   </ItemGroup>
 </Project>

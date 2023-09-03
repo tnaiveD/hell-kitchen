@@ -137,21 +137,24 @@ void Object::rotateZ(float angle)
 void Object::updateModelMatrix()
 {
 	model = glm::mat4(1.0f);
+
 	model = glm::translate(model, pos);
-	model = glm::scale(model, scope);
+
+	model = glm::rotate(model, glm::radians(angles.y), glm::vec3(.0f, 1.f, 0.f));
 	model = glm::rotate(model, glm::radians(angles.x), glm::vec3(1.0f, 0.f, 0.f));
-	model = glm::rotate(model, glm::radians(angles.y), glm::vec3(0.f, 1.f, 0.f));
-	model = glm::rotate(model, glm::radians(angles.z), glm::vec3(0.f, 0.f, 1.f));
+	model = glm::rotate(model, glm::radians(angles.z), glm::vec3(.0f, 0.f, 1.f));
+
+	model = glm::scale(model, scope);
 }
 
 // Draw
 
-void Object::draw(Shader& shader)
+void Object::draw(const Shader& shader)
 {
 	shader.use();
 	shader.setMat4("vuModel", model);
 
-	for (auto& x : meshes)
+	for (const auto& x : meshes)
 	{
 		x.draw(shader);
 	}

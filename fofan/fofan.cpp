@@ -344,7 +344,7 @@ int main()
 	//check
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		cout << "ERROR: Framebuffer status NOT_COMPLETE\n";
+		cout << "ERROR: Framebuffer not complete\n";
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -409,10 +409,15 @@ int main()
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Error: Shadow Framebuffer not complete\n";
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//light space
-	CamFPS lightCam(glm::vec3(2.0f, 3.0f, 1.0f), dLight.getDir(), glm::vec3(0.0f, 1.0f, 0.0f));
+	CamFPS lightCam(glm::vec3(3.5f, 7.0f, -1.0f), dLight.getDir(), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	////////////////////////////////////////
 	// Textures
@@ -431,14 +436,16 @@ int main()
 	Shader shaderSingleColor("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
 	Shader shaderLightSpace("..\\shaders\\LightSpace.vs", "..\\shaders\\LightSpace.fs");
 	Shader shaderScreenDepth("..\\shaders\\ScreenTexture.vs", "..\\shaders\\ScreenTexture.fs");
+	Shader shaderVisualNormals("..\\shaders\\VisualNormals.vs", "..\\shaders\\VisualNormals.fs", "..\\shaders\\VisualNormals.gs");
 
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shaderLights0);
 	shaders.push_back(&shaderSingleColor);
 	shaders.push_back(&shaderLightSpace);
 	shaders.push_back(&shaderScreenDepth);
+	shaders.push_back(&shaderVisualNormals);
 
-	//interface blocks
+	// interface blocks
 	unsigned int UBOmat;
 	glGenBuffers(1, &UBOmat);
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
@@ -502,21 +509,43 @@ int main()
 		loadTexTex("..\\img\\parquet0_spec.jpg", GL_REPEAT, TEXTURE_SPECULAR),
 	};
 
+	Texture planeWallDiffuse = loadTexTex("..\\img\\wall.jpg", GL_REPEAT, TEXTURE_DIFFUSE);
+
 	Mesh plane0Mesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeTextures);
 	Object plane0(plane0Mesh);
+
+	// Wall
+	Mesh planeWallMesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeWallDiffuse);
+	Object wall0(planeWallMesh);
+	Object wall1(planeWallMesh);
+	Object wall2(planeWallMesh);
 
 	// Light cube
 	Mesh lightCubeMesh(vertexDataToVertexVector(cube2vertices, sizeof(cube1vertices) / sizeof(float), VERTEX_P_T));
 	Object lightCube0(boxMesh);
-
+	
 	////////////////////////////////////////
 	// Static objects preparing
 
 	plane0.translate(glm::vec3(0.f, -0.502f, 0.f));
 	plane0.rescale(0.5f);
 
-	box0.translate(glm::vec3(-1.2f, 0.125f, 0.f));
-	box0.scale(glm::vec3(1.25f, 1.25f, 1.25f));
+	wall0.move(0, 0, -2.f);
+	wall0.rescale(0.2f);
+	wall0.rotateX(90.f);
+
+	wall1.move(-2.f, 0, 0);
+	wall1.rescale(0.2f);
+	wall1.rotateX(90.f);
+	wall1.rotateY(90.f);
+
+	wall2.move(2.f, 0, 0);
+	wall2.rescale(0.2f);
+	wall2.rotateX(90.f);
+	wall2.rotateY(90.f);
+
+	box0.translate(glm::vec3(-1.f, 0.f, 0.f));
+	box0.scale(glm::vec3(1.f, 1.f, 1.f));
 	box0.rotateY(10);
 	
 	box1.translate(glm::vec3(1.2f, -0.25f, 0.f));
@@ -529,7 +558,7 @@ int main()
 	lightCube0.translate(sLight0.getPos());
 	lightCube0.rescale(0.05f);
 
-	rocking_horse0.translate(glm::vec3(-0.15f, -0.573f, -0.2f));
+	rocking_horse0.translate(glm::vec3(0.f, -0.573f, -0.2f));
 	rocking_horse0.scale(glm::vec3(0.025f, 0.025f, 0.025f));
 	rocking_horse0.rotateY(-40.f);
 
@@ -537,10 +566,19 @@ int main()
 	// Scene
 
 	Scene sceneMain;
+	
 	sceneMain.add(&plane0);
+
+	sceneMain.add(&wall0);
+	sceneMain.add(&wall1);
+	sceneMain.add(&wall2);
+
+	sceneMain.add(&box0);
 	sceneMain.add(&box1);
 	sceneMain.add(&box2);
+	
 	sceneMain.add(&lightCube0);
+	
 	sceneMain.add(&rocking_horse0);
 
 	////////////////////////////////////////
@@ -607,12 +645,13 @@ int main()
 
 		float near_plane = 1.0f, far_plane = 7.5f;
 
-		glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
+		glm::mat4 lightProjectionOrtho = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
+		glm::mat4 lightProjectionPerspective = glm::perspective(glm::radians(75.f), 100.f / 100.f, 1.f, 16.f);
 		/*glm::mat4 lightView = glm::lookAt(glm::vec3(-2.f, 4.f, -1.f),
 			glm::vec3(0.f, 0.f, 0.f),
 			glm::vec3(0.f, 1.f, 0.f));*/
 		glm::mat4 lightView = lightCam.getView();
-		glm::mat4 lightSpace = lightProjection * lightView;
+		glm::mat4 lightSpace = lightProjectionPerspective * lightView;
 
 		shaderLightSpace.use();
 		shaderLightSpace.setMat4("vuLightSpace", lightSpace);
@@ -627,24 +666,29 @@ int main()
 
 		glm::mat4 model(1.f);
 
-		sceneMain.draw(shaderLightSpace);
+		//sceneMain.draw(shaderLightSpace);
 
-		////plane
-		//plane0.draw(shaderLightSpace);
-		//
-		////cube 1
-		//box0.draw(shaderLightSpace);
+		//plane
+		plane0.draw(shaderLightSpace);
+		
+		//walls
+		wall0.draw(shaderLightSpace);
+		wall1.draw(shaderLightSpace);
+		wall2.draw(shaderLightSpace);
 
-		////cube2
-		//box1.draw(shaderLightSpace);
+		//cube 1
+		box0.draw(shaderLightSpace);
 
-		//box2.draw(shaderLightSpace);
+		//cube2
+		box1.draw(shaderLightSpace);
 
-		////horse
-		//rocking_horse0.draw(shaderLightSpace);
+		box2.draw(shaderLightSpace);
 
-		////light cube
-		//lightCube0.draw(shaderLightSpace);
+		//horse
+		rocking_horse0.draw(shaderLightSpace);
+
+		//light cube
+		lightCube0.draw(shaderLightSpace);
 
 		//ending
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
@@ -654,40 +698,34 @@ int main()
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		shaderLights0.use();
 		shaderLights0.setVec3("fuViewPos", camPos);
 
 		//shadow map
 		shaderLights0.setMat4("vuLightSpace", lightSpace);
+		
 		glActiveTexture(GL_TEXTURE0 + 5);
 		glBindTexture(GL_TEXTURE_2D, depthmap);
 		shaderLights0.setInt("shadowMap", 5);
 
+		//sceneMain.draw(shaderLights0);
 
-		sceneMain.draw(shaderLights0);
+		plane0.draw(shaderLights0);
+		wall0.draw(shaderLights0);
+		wall1.draw(shaderLights0);
+		wall2.draw(shaderLights0);
+		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
+		box0.draw(shaderLights0);
+		box1.draw(shaderLights0);
+		box2.draw(shaderLights0);
+		shaderLights0.setFloat("fuMaterial.shininess", 32.f);
+		rocking_horse0.draw(shaderLights0);
+		lightCube0.draw(shaderSingleColor);
+		
+		rocking_horse0.draw(shaderVisualNormals);
 
-		////plane
-		//plane0.draw(shaderLights0);
-
-		////cubes
-		//shaderLights0.setFloat("fuMaterial.shininess", 256.f);
-
-		////boxes
-		//box0.draw(shaderLights0);
-		//
-		//box1.draw(shaderLights0);
-
-		//box2.draw(shaderLights0);
-
-		////horse
-		//shaderLights0.setFloat("fuMaterial.shininess", 32.f);			// ƒŒ¡¿¬»“‹ –¿—œŒ«Õ¿¬¿Õ»≈ Ã¿“≈–»¿ÀŒ¬
-		//rocking_horse0.draw(shaderLights0);
-		//
-		////light cube
-		//lightCube0.draw(shaderSingleColor);
-
-		//show depth map 
+		// show depth map 
 		if (dirLightDepthDemo)
 		{
 			shaderScreenDepth.use();
@@ -699,10 +737,10 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
-		//postprocess
-		//----------------------------------
+		// postprocess
+		// ----------------------------------
 		
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindVertexArray(0);
 		
@@ -725,11 +763,11 @@ int main()
 		glm::vec3 nightAmbient = glm::vec3(AMBIENT_DEFAULT);
 		glm::vec3 nightSpecular = glm::vec3(SPECULAR_DEFAULT);
 
-		//evening begin
+		// evening begin
 		float _magic = 0.5f;      // night/day time range
 
 		float blueInNight = 0.3f; // 0f .. 1f blue impact
-		float redInDay = 0.5f;	  // below
+		float redInDay = 0.4f;	  // below
 		float greenInDay = 0.2f;  // below
 		
 		if ((k < _magic) && (k > -_magic))
@@ -761,13 +799,13 @@ int main()
 
 		shaderLights0.use();
 		shaderLights0.setDLight(dLight);
-
+		
 		lightCam.moveDir(glm::vec3(0.f, sin(time * .1f) * deltaTime * .03f, 0.f));
 
 		// Smth changes (objects transformations)
 		// --------------------------------------------------
 
-		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
+		float xMovePos = cos(time * 1.75f) * deltaTime * 0.15f;
 		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
 		float xMoveDir = cos(time * 1.75f) * deltaTime * 0.1f;
 
@@ -775,9 +813,11 @@ int main()
 		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
 
 		lightCube0.translate(sLight0.getPos());
-		lightCube0.rotateZ(cos(time * 1.75f) * 0.1f);
+		lightCube0.rotateZ(cos(time * 1.75f) * deltaTime * 12.f);
 
-		rocking_horse0.rotateZ(cos(time * 1.5f) * deltaTime * 6.f);
+		rocking_horse0.rotateZ(cos(time * 1.25f) * deltaTime * 6.f);
+		
+
 
 		box2.move(0, -((9.8f * 0.1f) * deltaTime), 0);
 
@@ -797,10 +837,15 @@ int main()
 
 	glDeleteBuffers(1, &VBOcube);
 	glDeleteBuffers(1, &VBOplane);
+	glDeleteBuffers(1, &VBOskybox);
+	glDeleteBuffers(1, &quadVBO);
 	glDeleteVertexArrays(1, &VAOcube);
 	glDeleteVertexArrays(1, &VAOplane);
+	glDeleteVertexArrays(1, &VAOskybox);
+	glDeleteVertexArrays(1, &quadVAO);
 
 	shaderLights0.suicide();
+	shaderLightSpace.suicide();
 	shaderSingleColor.suicide();
 
 	glfwTerminate();

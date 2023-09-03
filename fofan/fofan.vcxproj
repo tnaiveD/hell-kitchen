@@ -168,6 +168,9 @@
     <None Include="..\shaders\ScreenTexture.vs" />
     <None Include="..\shaders\SingleColor.fs" />
     <None Include="..\shaders\SingleColor.vs" />
+    <None Include="..\shaders\VisualNormals.fs" />
+    <None Include="..\shaders\VisualNormals.gs" />
+    <None Include="..\shaders\VisualNormals.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
