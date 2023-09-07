@@ -19,7 +19,7 @@ using glm::mat4;
 //////////////////
 
 /*
-*	Specify type of a vertex, which passed to f(<type>, Vertex)
+*	Vertex type... f(<type>, Vertex)
 *	
 *	VERTEX - pos + normals + textures.
 *	VERTEX_P - pos only.
@@ -82,6 +82,17 @@ struct Texture
 
 };
 
+/////////////////////////////////////////
+// Materials
+/////////////////////
+
+struct Material
+{
+	std::string name;
+	float shininess;
+	Material();
+};
+
 ////////////////////////////////////////
 // Mesh
 ///////////////////
@@ -99,6 +110,8 @@ public:
 
 	vector<unsigned int> indices;
 	vector<Texture> textures;
+	Material material;
+
 	unsigned int VAO;
 
 	// Full-fledged vertex, drawing via glDrawElements
@@ -127,9 +140,16 @@ private:
 	void setupMesh();
 };
 
+
+/////////////////////////////////////////
+// Other
+/////////////////////
+
 // Pass vertices data and one of VERTEX above to convert
 vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertexType);
 
+// Reset samplers2d (by default - GL_TEXTURE(0...6)
+void resetSamplers2D();
 
 /////////////////////////////////////////
 // Texture loading

@@ -38,7 +38,7 @@ void main()
 {
 	
 	vs_out.pos = vec3(vuModel * vec4(inPos, 1.0));
-	vs_out.normal = transpose(inverse(mat3(vuModel))) * inNormal;
+	vs_out.normal = mat3(transpose(inverse(vuModel))) * inNormal;
 	vs_out.tex = inTex;
 	vs_out.lightSpacePos = vuLightSpace * vec4(vs_out.pos, 1.0);	
 

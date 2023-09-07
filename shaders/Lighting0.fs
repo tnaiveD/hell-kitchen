@@ -120,7 +120,6 @@ uniform sampler2D shadowMap;
 
 uniform vec3 fuViewPos;
 
-
 //////////////////////////////////////////
 // MAIN
 /////////////////////
@@ -161,12 +160,15 @@ void main()
 	}
 	
 	if ((!DLight.active) && (!SLCheckActive) && (!PLCheckActive))
+	{
 		color += DLight.ambient * vec3(texture(fuMaterial.tex_diffuse0, fs_in.tex));
-
+	}
+		
 	//////////////////////////////////////////////
 	
 	fColor = vec4(color, 1.0);
-	
+	//fColor = vec4(1.0, 0.0, 0.0, 1.0);
+
 	//or gamma corrected
 	//float gamma = 2.2;
 	//fColor.rgb = pow(color.rgb, vec3(1.0/gamma));
@@ -259,6 +261,8 @@ vec3 calcSpotLight(SpotLight light, vec3 viewDir)
 	}
 }
 
+
+// сверх большие отрицательные значения
 float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 {	
 	vec3 projectionPos = lightSpacePos.xyz / lightSpacePos.w;
@@ -270,7 +274,7 @@ float calcShadow(vec4 lightSpacePos, vec3 lightDir)
 	float currentDepth = projectionPos.z;
 
 	//float bias = max(0.00492 * (1.0 - dot(fs_in.normal, lightDir)), 0.004);
-	float bias = 0.00195;
+	float bias = 0.00175;
 	
 	float shadow = 0.0;
 	vec2 texelSize = 2.0 / textureSize(shadowMap, 0);

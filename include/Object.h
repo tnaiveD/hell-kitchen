@@ -55,6 +55,7 @@ public:
 	// Draw
 
 	void draw(const Shader&);
+	void draw(Shader*);
 
 private:
 	vector<Mesh> meshes;

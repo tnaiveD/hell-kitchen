@@ -160,4 +160,14 @@ void Object::draw(const Shader& shader)
 	}
 }
 
+void Object::draw(Shader* shader)
+{
+	shader->use();
+	shader->setMat4("vuModel", model);
+
+	for (const auto& x : meshes)
+	{
+		x.draw(*shader);
+	}
+}
 

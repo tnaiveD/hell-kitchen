@@ -119,6 +119,8 @@ void Mesh::draw(const Shader& shader) const
 	//unsigned int heightNr = 0;
 
 	shader.use();
+	shader.setFloat("fuMaterial.shininess", material.shininess);
+
 	for (int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -148,6 +150,7 @@ void Mesh::draw(const Shader& shader) const
 		string tmp = "fuMaterial." + name + number;
 		shader.setInt(tmp, i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	glBindVertexArray(VAO);
@@ -173,7 +176,18 @@ void Mesh::draw(const Shader& shader) const
 	if (vertices.size() == 36)
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	resetSamplers2D();
+
 	glBindVertexArray(0);
+}
+
+void resetSamplers2D()
+{
+	for (int i = 0; i < 7; i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 	glActiveTexture(GL_TEXTURE0);
 }
 
@@ -219,6 +233,8 @@ vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, Verte
 	}
 	return vec;
 }
+
+Material::Material() : shininess(32.f), name("") {}
 
 ////////////////////////////////////////////////
 // Texture loading

@@ -577,8 +577,6 @@ int main()
 	sceneMain.add(&box1);
 	sceneMain.add(&box2);
 	
-	sceneMain.add(&lightCube0);
-	
 	sceneMain.add(&rocking_horse0);
 
 	////////////////////////////////////////
@@ -634,16 +632,16 @@ int main()
 		
 		////////////////////////////////////
 		// Drawing
-
-		glClearColor(BLACK, 1.0);
+		 
+		glClearColor(GREY_DARK_DARK, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Shadows
-		// ----------------------------------
+		// ------------------------
 
 		// Light Space
 
-		float near_plane = 1.0f, far_plane = 7.5f;
+		float near_plane = 0.1f, far_plane = 8.f;
 
 		glm::mat4 lightProjectionOrtho = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
 		glm::mat4 lightProjectionPerspective = glm::perspective(glm::radians(75.f), 100.f / 100.f, 1.f, 16.f);
@@ -664,38 +662,14 @@ int main()
 		// Writing to depthmap
 		// ------------------------
 
-		glm::mat4 model(1.f);
-
-		//sceneMain.draw(shaderLightSpace);
-
-		//plane
-		plane0.draw(shaderLightSpace);
-		
-		//walls
-		wall0.draw(shaderLightSpace);
-		wall1.draw(shaderLightSpace);
-		wall2.draw(shaderLightSpace);
-
-		//cube 1
-		box0.draw(shaderLightSpace);
-
-		//cube2
-		box1.draw(shaderLightSpace);
-
-		box2.draw(shaderLightSpace);
-
-		//horse
-		rocking_horse0.draw(shaderLightSpace);
-
-		//light cube
-		lightCube0.draw(shaderLightSpace);
+		sceneMain.draw(shaderLightSpace);
 
 		//ending
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 		// Main framebuffer
 		// ----------------------------------------
-
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -704,27 +678,14 @@ int main()
 
 		//shadow map
 		shaderLights0.setMat4("vuLightSpace", lightSpace);
-		
-		glActiveTexture(GL_TEXTURE0 + 5);
+		glActiveTexture(GL_TEXTURE7);
 		glBindTexture(GL_TEXTURE_2D, depthmap);
-		shaderLights0.setInt("shadowMap", 5);
+		shaderLights0.setInt("shadowMap", 7);
+		
+		sceneMain.draw(shaderLights0);
 
-		//sceneMain.draw(shaderLights0);
-
-		plane0.draw(shaderLights0);
-		wall0.draw(shaderLights0);
-		wall1.draw(shaderLights0);
-		wall2.draw(shaderLights0);
-		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
-		box0.draw(shaderLights0);
-		box1.draw(shaderLights0);
-		box2.draw(shaderLights0);
-		shaderLights0.setFloat("fuMaterial.shininess", 32.f);
-		rocking_horse0.draw(shaderLights0);
 		lightCube0.draw(shaderSingleColor);
 		
-		rocking_horse0.draw(shaderVisualNormals);
-
 		// show depth map 
 		if (dirLightDepthDemo)
 		{
@@ -764,7 +725,7 @@ int main()
 		glm::vec3 nightSpecular = glm::vec3(SPECULAR_DEFAULT);
 
 		// evening begin
-		float _magic = 0.5f;      // night/day time range
+		float _magic = 0.8f;      // night/day time range
 
 		float blueInNight = 0.3f; // 0f .. 1f blue impact
 		float redInDay = 0.4f;	  // below
@@ -817,9 +778,7 @@ int main()
 
 		rocking_horse0.rotateZ(cos(time * 1.25f) * deltaTime * 6.f);
 		
-
-
-		box2.move(0, -((9.8f * 0.1f) * deltaTime), 0);
+		box2.move(0, -((9.8f * 0.1f * time) * deltaTime), 0);
 
 		////////////////////////////////////
 		
@@ -847,6 +806,8 @@ int main()
 	shaderLights0.suicide();
 	shaderLightSpace.suicide();
 	shaderSingleColor.suicide();
+	shaderScreenDepth.suicide();
+	shaderVisualNormals.suicide();
 
 	glfwTerminate();
 	system("pause");
