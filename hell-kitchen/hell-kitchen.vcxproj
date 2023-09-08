@@ -144,7 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\Camera.cpp" />
+    <ClCompile Include="..\include\CamFPS.cpp" />
     <ClCompile Include="..\include\gl.c" />
     <ClCompile Include="..\include\Light.cpp" />
     <ClCompile Include="..\include\Mesh.cpp" />
@@ -155,7 +155,7 @@
     <ClCompile Include="MAIN.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Camera.h" />
+    <ClInclude Include="..\include\CamFPS.h" />
     <ClInclude Include="..\include\gl.h" />
     <ClInclude Include="..\include\GLFW\glfw3.h" />
     <ClInclude Include="..\include\Light.h" />
@@ -181,6 +181,11 @@
     <Text Include="..\shaders\Reflection.vs" />
     <Text Include="..\shaders\SingleColor.vs" />
     <Text Include="..\shaders\Skybox.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\Geometry.fs" />
+    <None Include="..\shaders\Geometry.gs" />
+    <None Include="..\shaders\Geometry.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

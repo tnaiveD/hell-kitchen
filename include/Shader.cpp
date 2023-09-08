@@ -1,5 +1,7 @@
 #include "Shader.h"
 
+Shader::Shader() {}
+
 Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* geometrySourcePath) {
 
 	//Read shader source from files
@@ -27,11 +29,37 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, con
 		vertexSource = vertexStream.str();
 		fragmentSource = fragmentStream.str();
 	}
-	catch (...) {
-		std::cerr << "Error: Shader. File not successfuly read\n";
+	catch (std::ifstream::failure e) {
+		std::cout << "Error: SHADER_CPP. File not successfuly read\n";
 	}
 	const char* vertexShaderSource = vertexSource.c_str();
 	const char* fragmentShaderSource = fragmentSource.c_str();
+
+	//geometry shader
+	std::string geometrySource;
+
+	if (geometrySourcePath)
+	{
+		std::ifstream geometryIfStream;
+		geometryIfStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		
+		try
+		{
+			geometryIfStream.open(geometrySourcePath);
+
+			std::stringstream geometryStream;
+			geometryStream << geometryIfStream.rdbuf();
+
+			geometryIfStream.close();
+			geometrySource = geometryStream.str();
+
+		}
+		catch (std::ifstream::failure e)
+		{
+			std::cerr << "Geometry Source File not successfuly read\n";
+		}
+	}
+
 
 	//Compiling shaders
 	//------------------------------
@@ -45,7 +73,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, con
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertexShader, sizeof(infoLog), NULL, infoLog);
-		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
+		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", " 
 				  << fragmentSourcePath << "). Vertex Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
@@ -56,82 +84,64 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, con
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragmentShader, sizeof(infoLog), NULL, infoLog);
-		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
+		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
 			<< fragmentSourcePath << "). Fragment Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
 	//geometry
-	unsigned int geometryShader;
-	bool geometryCompileSuccess = false;
-	if (geometrySourcePath)
+	unsigned int shaderGeometry;
+	if (geometrySourcePath) 
 	{
-		geometryCompileSuccess = true;
-		std::ifstream geometryIfStream;
-		std::string geometrySource;
-
-		geometryIfStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-		try
-		{
-			geometryIfStream.open(geometrySourcePath);
-
-			std::stringstream geometrySSstream;
-			geometrySSstream << geometryIfStream.rdbuf();
-			geometryIfStream.close();
-			geometrySource = geometrySSstream.str();
-
-		}
-		catch(std::ifstream::failure& e)
-		{
-			std::cerr << "Error: Geometry Shader. File not successfuly read\n";
-			geometryCompileSuccess = false;
-		}
-
-		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
 		const char* geometrySourceCStr = geometrySource.c_str();
-		glShaderSource(geometryShader, 1, &geometrySourceCStr, NULL);
-		glCompileShader(geometryShader);
-
-		glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &success);
+		shaderGeometry = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(shaderGeometry, 1, &geometrySourceCStr, NULL);
+		glCompileShader(shaderGeometry);
+		glGetShaderiv(shaderGeometry, GL_COMPILE_STATUS, &success);
 		if (!success)
 		{
-			glGetShaderInfoLog(geometryShader, sizeof(infoLog), NULL, infoLog);
-			std::cerr << "Error: Shader (" << vertexSourcePath << ", "
-				<< fragmentSourcePath << "). Fragment Shader compilation FAILED\n" << infoLog << '\n';
-			geometryCompileSuccess = false;
+			glGetShaderInfoLog(shaderGeometry, sizeof(infoLog), NULL, infoLog);
+			std::cerr << "Error: Geometry Shader. " << infoLog << "\n";
 		}
 	}
 
-	//shader program link
+	//shader program
 	id = glCreateProgram();
-	
 	glAttachShader(id, vertexShader);
 	glAttachShader(id, fragmentShader);
-	if(geometryCompileSuccess) glAttachShader(id, geometryShader);
-
+	if (geometrySourcePath) 
+		glAttachShader(id, shaderGeometry);
+	
 	glLinkProgram(id);
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
-
-	if (!success) 
-	{
+	if (!success) {
 		glGetProgramInfoLog(id, sizeof(infoLog), NULL, infoLog);
-		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
+		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
 			<< fragmentSourcePath << "). Shader Program linking FAILED\n" << infoLog << '\n';
 	}
 
 	//clear
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	if (geometryCompileSuccess) glDeleteShader(geometryShader);
+	if (geometrySourcePath)
+		glDeleteShader(shaderGeometry);
 
 	//uniforms check
-	this->infoLog += std::string(vertexSourcePath) + std::string(", ") +
-					 std::string(fragmentSourcePath) + std::string(": \n");
+	if (geometrySourcePath)
+	{
+		this->infoLog += std::string(vertexSourcePath) + std::string(", ") +
+			std::string(fragmentSourcePath) + std::string(", ") +
+			std::string(geometrySourcePath) + std::string(": \n");
+	}
+	else
+	{
+		this->infoLog += std::string(vertexSourcePath) + std::string(", ") +
+			std::string(fragmentSourcePath) + std::string(": \n");
+	}
 
 	wrongUniforms.clear();
 }
 
-void Shader::use() {
+void Shader::use() const {
 	glUseProgram(id);
 }
 
@@ -235,7 +245,7 @@ void Shader::setVec2(const std::string& name, glm::vec2 vec) const {
 		glUniform2f(location, vec.x, vec.y);
 }
 
-void Shader::setMat4(const std::string& name, glm::mat4& mat4) const {
+void Shader::setMat4(const std::string& name, const glm::mat4& mat4) const {
 	int location = glGetUniformLocation(id, name.c_str());
 	if (location == -1)
 	{
@@ -251,33 +261,101 @@ void Shader::setMat4(const std::string& name, glm::mat4& mat4) const {
 
 unsigned int Shader::getID() const { return id; }
 
-void Shader::setDLight(DirectionalLight& light) const
+void Shader::setDLight(const DirectionalLight& light) const
 {
 	this->setVec3("DLight.ambient", light.getAmbient());
 	this->setVec3("DLight.diffuse", light.getDiffuse());
 	this->setVec3("DLight.specular", light.getSpecular());
+	
 	this->setVec3("DLight.dir",	light.getDir());
+
+	this->setBool("DLight.active", light.isActive());
 };
 
 
-void Shader::setPLights(std::vector<PointLight*>& light) const
+void Shader::setPLights(const std::vector<PointLight*>& light) const
 {
+	this->setInt("PLnum", PointLight::getCount());
+
 	for (int i = 0; i < light.size(); i++)
 	{
 		this->setVec3("PLight[" + std::to_string(i) + "].ambient", light[i]->getAmbient());
 		this->setVec3("PLight[" + std::to_string(i) + "].diffuse", light[i]->getDiffuse());
 		this->setVec3("PLight[" + std::to_string(i) + "].specular", light[i]->getSpecular());
+		
 		this->setVec3("PLight[" + std::to_string(i) + "].pos", light[i]->getPos());
+		
 		glm::vec3 atten = light[i]->getAttenuation();
 		this->setFloat("PLight[" + std::to_string(i) + "].constant", atten.x);
 		this->setFloat("PLight[" + std::to_string(i) + "].linear", atten.y);
 		this->setFloat("PLight[" + std::to_string(i) + "].quadratic", atten.z);
+	
+		this->setBool("PLight[" + std::to_string(i) + "].active", light[i]->isActive());
 	}
 };
 
-void Shader::setSLights(std::vector<SpotLight*>& light) const
+void Shader::setPLights(const PointLight& light, int i) const
 {
+	this->setInt("PLnum", PointLight::getCount());
+	
+	this->setVec3("PLight[" + std::to_string(i) + "].ambient", light.getAmbient());
+	this->setVec3("PLight[" + std::to_string(i) + "].diffuse", light.getDiffuse());
+	this->setVec3("PLight[" + std::to_string(i) + "].specular", light.getSpecular());
+	
+	this->setVec3("PLight[" + std::to_string(i) + "].pos", light.getPos());
+	
+	glm::vec3 atten = light.getAttenuation();
+	this->setFloat("PLight[" + std::to_string(i) + "].constant", atten.x);
+	this->setFloat("PLight[" + std::to_string(i) + "].linear", atten.y);
+	this->setFloat("PLight[" + std::to_string(i) + "].quadratic", atten.z);	
 
+	this->setBool("PLight[" + std::to_string(i) + "].active", light.isActive());
+};
+
+void Shader::setSLights(const std::vector<SpotLight*>& light) const
+{
+	this->setInt("SLnum", SpotLight::getCount());
+	for (int i = 0; i < light.size(); i++)
+	{
+		this->setVec3("SLight[" + std::to_string(i) + "].ambient", light[i]->getAmbient());
+		this->setVec3("SLight[" + std::to_string(i) + "].diffuse", light[i]->getDiffuse());
+		this->setVec3("SLight[" + std::to_string(i) + "].specular", light[i]->getSpecular());
+		
+		this->setVec3("SLight[" + std::to_string(i) + "].pos", light[i]->getPos());
+		this->setVec3("SLight[" + std::to_string(i) + "].dir", light[i]->getDir());
+		
+		glm::vec3 atten = light[i]->getAttenuation();
+		this->setFloat("SLight[" + std::to_string(i) + "].constant", atten.x);
+		this->setFloat("SLight[" + std::to_string(i) + "].linear", atten.y);
+		this->setFloat("SLight[" + std::to_string(i) + "].quadratic", atten.z);
+		
+		this->setFloat("SLight[" + std::to_string(i) + "].inAngle", glm::cos(glm::radians(light[i]->getInAngle())));
+		this->setFloat("SLight[" + std::to_string(i) + "].outAngle", glm::cos(glm::radians(light[i]->getOutAngle())));
+
+		this->setBool("SLight[" + std::to_string(i) + "].active", light[i]->isActive());
+	}
+};
+
+void Shader::setSLights(const SpotLight& light, int i) const
+{		
+	this->setInt("SLnum", SpotLight::getCount());
+
+	this->setVec3("SLight[" + std::to_string(i) + "].ambient", light.getAmbient());
+	this->setVec3("SLight[" + std::to_string(i) + "].diffuse", light.getDiffuse());
+	this->setVec3("SLight[" + std::to_string(i) + "].specular", light.getSpecular());
+	
+	this->setVec3("SLight[" + std::to_string(i) + "].pos", light.getPos());
+	this->setVec3("SLight[" + std::to_string(i) + "].dir", light.getDir());
+	
+	glm::vec3 atten = light.getAttenuation();
+	this->setFloat("SLight[" + std::to_string(i) + "].constant", atten.x);
+	this->setFloat("SLight[" + std::to_string(i) + "].linear", atten.y);
+	this->setFloat("SLight[" + std::to_string(i) + "].quadratic", atten.z);
+	
+	this->setFloat("SLight[" + std::to_string(i) + "].inAngle", glm::cos(glm::radians(light.getInAngle())));
+	this->setFloat("SLight[" + std::to_string(i) + "].outAngle", glm::cos(glm::radians(light.getOutAngle())));
+	
+	this->setBool("SLight[" + std::to_string(i) + "].active", light.isActive());
 };
 
 void Shader::suicide() {

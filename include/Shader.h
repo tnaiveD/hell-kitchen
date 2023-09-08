@@ -19,10 +19,10 @@ class Shader {
 public:
 	unsigned int id;
 
-	Shader() = delete;
-	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* geometrySourcePath = NULL);
+	Shader();
+	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* GeometrySourcePath = NULL);
 	
-	void use();
+	void use() const;
 	
 	//set uniforms
 	void setBool(const std::string& name, bool) const;
@@ -32,7 +32,7 @@ public:
 	void setVec3(const std::string& name, glm::vec3) const;
 	void setVec2(const std::string& name, float, float) const;
 	void setVec2(const std::string& name, glm::vec2) const;
-	void setMat4(const std::string& name, glm::mat4&) const;
+	void setMat4(const std::string& name, const glm::mat4&) const;
 
 	//get
 	unsigned int getID() const;
@@ -40,10 +40,19 @@ public:
 	//debug
 	std::string getInfoLog() const;
 
-	//light data transfer
-	void setDLight(DirectionalLight&) const;
-	void setPLights(std::vector<PointLight*>&) const;
-	void setSLights(std::vector<SpotLight*>&) const;
+	////////////////////////////////////////////////
+	// Light data transfer
+	
+	void setDLight(const DirectionalLight&) const;
+	
+	void setPLights(const std::vector<PointLight*>&) const;
+	//simple light object, index
+	void setPLights(const PointLight&, int i = 0) const;
+
+	
+	void setSLights(const std::vector<SpotLight*>&) const;
+	//simple light object, index
+	void setSLights(const SpotLight&, int i = 0) const;
 
 	//dealloc
 	void suicide();

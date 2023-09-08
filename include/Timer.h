@@ -37,6 +37,10 @@ using milliseconds = std::chrono::milliseconds;
         milliseconds getTime() const {
             return time;
         }
+        high_resolution_clock& getChronoHighResClockRef()
+        {
+        
+        }
 
         uint32_t Elapsed() const
         {

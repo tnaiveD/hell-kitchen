@@ -7,61 +7,60 @@
 #include "stb_image.h"
 
 #include "Shader.h"
-#include "Camera.h"
+#include "CamFPS.h"
 #include "Materials.h"
 #include "Light.h"
 #include "Timer.h"
 #include "Model.h"
+#include "Object.h"
+#include "Debug.h"
+#include "Scene.h"
 
-
-#define SCR_WIDTH 1000
-#define SCR_HEIGHT 800
-
-#define NAME_TO_STR(name) (#name)
+#define SCR_WIDTH 1100
+#define SCR_HEIGHT 700
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void cursor_pos_callback(GLFWwindow*, double, double);
 void key_callback(GLFWwindow*, int, int, int, int);
 void processInput(GLFWwindow*);
 
+void drawScene(const Shader&);
+
 //Debug funs
 void shadersLogs(const std::vector<Shader*>&);
-
 
 using std::cout;
 
 /////////////////////////////////////////
-// Speed
+// Camera
+
+CamFPS cam(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 //delta time
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
 
-/////////////////////////////////////////
-// Camera
-
-float xLast = SCR_WIDTH / 2;
-float yLast = SCR_HEIGHT / 2;
-float yaw = -100.0f;
-float pitch = -30.f;
-
+//mouse view
+float xLast = 0.0f, yLast = 0.0f;
+float yaw = -90.0f;
+float pitch = 0.0f;
 bool firstCursor = true;
-
-Camera camera0(glm::vec3(1.f, 1.f, 3.f), glm::vec3(0.f, 1.f, 0.f), yaw, pitch);
 
 /////////////////////////////////////////
 // Lights
 
+bool flActive = false;
 
-//flashlight
-bool flActive = true;
-bool flFlicker = false;
-float flTimer = 0.f;
+/////////////////////////////////////////
+// Shadows
+
+bool dirLightDepthDemo = false; // turn on with key M
 
 /////////////////////////////////////////
 // MAIN
 
-int main() {
+int main() 
+{
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -97,7 +96,7 @@ int main() {
 	////////////////////////////////////////
 	// Data configuring
 
-	//cube
+	//cube V N T
 	const float cube1vertices[] = {
 		//vertex			  //normal			   //tex
 		 -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -143,7 +142,7 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	//cube no normal
+	//cube V T
 	const float cube2vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -188,40 +187,18 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	//plane
+	//plane V N T
 	const float planeVertices[] = {
-		-15.f, -0.502f, 15.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-		15.f, -.502f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		-15.f, -.502f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f,
+		-10.f, -.0f, 10.f, 0.f, 1.f, 0.f,	 0.f, 0.f,
+		10.f, -.0f, 10.f, 0.f, 1.f, 0.f,     10.f, 0.f,
+		-10.f, -.0f, -10.f, 0.f, 1.f, 0.f,   0.f, 10.f,
 
-		15.f, -.502f, 15.f, 0.f, 1.f, 0.f,     30.f, 0.f,
-		15.f, -.502f, -15.f, 0.f, 1.f, 0.f,    30.f, 30.f,
-		-15.f, -.502f, -15.f, 0.f, 1.f, 0.f,   0.f, 30.f
+		10.f, -.0f, 10.f, 0.f, 1.f, 0.f,     10.f, 0.f,
+		10.f, -.0f, -10.f, 0.f, 1.f, 0.f,    10.f, 10.f,
+		-10.f, -.0f, -10.f, 0.f, 1.f, 0.f,   0.f, 10.f
 	};
 
-	//grass
-	const float grassVertices[] = {
-		-0.5f, 0.5f, 0.f,   0.0f, 0.0f,
-		-0.5f, -0.5f, 0.f,  0.0f, 1.0f,
-		0.5f, -0.5f, 0.f,   1.0f, 1.0f,
-
-		-0.5f, 0.5f, 0.f,   0.0f, 0.0f,
-		0.5f, -0.5f, 0.f,   1.0f, 1.0f,
-		0.5f, 0.5f, 0.f,    1.0f, 0.0f,
-	};
-
-	//mirror
-	const float mirrorVertices[] = {
-		-0.25f, 0.0f, 0.f,
-		-0.25f, 1.0f, 0.f,
-		0.25f, 0.0f, 0.f,
-
-		-0.25f, 1.0f, 0.f,
-		0.25f, 0.0f, 0.f,
-		0.25f, 1.0f, 0.f
-	};
-
-	//quad (screen)
+	//quad (screen) V T
 	float quadVertices[] = {
 		// positions   // texCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
@@ -288,52 +265,6 @@ int main() {
 		 1.0f, -1.0f,  1.0f
 	};
 
-	//cube (vertex + normal)
-
-	float cubeVNVertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-	};
-
 	//data init
 	//--------------------------------
 
@@ -365,18 +296,6 @@ int main() {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
 
-	//grass VAO
-	unsigned int VBOgrass, VAOgrass;
-	glGenVertexArrays(1, &VAOgrass);
-	glBindVertexArray(VAOgrass);
-	glGenBuffers(1, &VBOgrass);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOgrass);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(grassVertices), grassVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
-
 	//screen VAO
 	unsigned int quadVAO, quadVBO;
 	glGenVertexArrays(1, &quadVAO);
@@ -399,26 +318,6 @@ int main() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 
-	//cubeVN (vertex + normal)
-	unsigned int VAOcubeVN, VBOcubeVN;
-	glGenVertexArrays(1, &VAOcubeVN);
-	glBindVertexArray(VAOcubeVN);
-	glGenBuffers(1, &VBOcubeVN);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOcubeVN);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVNVertices), NULL, GL_STATIC_DRAW);
-
-	void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	memcpy(ptr, cubeVNVertices, sizeof(cubeVNVertices));
-	if (!glUnmapBuffer(GL_ARRAY_BUFFER))
-	{
-		cout << "Error: glUnmapBuffer() return false\n";
-	}
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
-
 	glBindVertexArray(0);
 
 	//framebuffers (and renderbuffers)
@@ -435,13 +334,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOtex, 0);
 
-	//or?
-	/*glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0,
-		GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
-	);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, FBOtex, 0);*/
-
 	//renderbuffers
 	unsigned int RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -452,59 +344,108 @@ int main() {
 	//check
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		cout << "ERROR: Framebuffer status NOT_COMPLETE\n";
+		cout << "ERROR: Framebuffer not complete\n";
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	////////////////////////////////////////
 	// Lights
 
-	//dir lights
+	DirectionalLight dLight;
+	dLight.multDiffuse(1.5f);
+	dLight.multAmbient(0.5f);
 
-	//point lights
+	PointLight pLight0(-5.f, 2.5f, 0.f);
+	pLight0.multAmbient(0.25f);
+	pLight0.multDiffuse(2.f);
+	pLight0.setAttenuation(ATTENUATION20);
+	pLight0.setActive(false);
 
-	//spotlights
-	SpotLight sLight0(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	sLight0.setAttenuation(ATTENUATION13);
-	sLight0.setAngles(44.f, 38.f);
+	SpotLight sLight0(glm::vec3(0.0f, 1.5f, 0.0f));
+	SpotLight sLight1(glm::vec3(5.0f, 1.5f, 0.0f));
+	SpotLight sLight2(-1.f, 0.5f, 4.5f, 0.25f, 0.f, -1.f);
+	SpotLight sLight3(1.f, 0.5f, 4.5f, -0.25f, 0.f, -1.f);
 
-	sLight0.multAmbient(0.2f);
-	sLight0.multDiffuse(5.f);
-	sLight0.multSpecular(2.5f);
+	vector<SpotLight*> sLights
+	{
+		&sLight0, &sLight1, &sLight2, &sLight3
+	};
+
+	for (const auto& x : sLights)
+	{
+		x->setAttenuation(ATTENUATION32);
+		x->multAmbient(0.05f);
+		x->multDiffuse(2.f);
+		x->setRadius(50.f);
+		x->setActive(false);
+	}
+
+	sLight0.setActive(false);
+	sLight2.setDiffuse(glm::vec3(0.6f, 0.1f, 0.2f));
+	sLight3.setDiffuse(glm::vec3(0.1f, 0.2f, 0.7f));
+	sLight2.setSpecular(glm::vec3(0.6f, 0.1f, 0.2f));
+	sLight3.setSpecular(glm::vec3(0.1f, 0.2f, 0.7f));
+
+	////////////////////////////////////////
+	// Shadows
+
+	unsigned int FBOdepthmap;
+	glGenFramebuffers(1, &FBOdepthmap);
+
+	unsigned int depthmap;
+	const unsigned int c_shadowwidth = 2048, c_shadowheight = 2048;
+	glGenTextures(1, &depthmap);
+	glBindTexture(GL_TEXTURE_2D, depthmap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, c_shadowwidth, c_shadowheight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthmap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Error: Shadow Framebuffer not complete\n";
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//light space
+	CamFPS lightCam(glm::vec3(3.5f, 7.0f, -1.0f), dLight.getDir(), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	////////////////////////////////////////
 	// Textures
-
-	//unsigned int tex0 = loadTex("..\\img\\container1.png");
-	//unsigned int tex0Spec = loadTex("..\\img\\container1_spec.png");
-	//unsigned int tex0Emiss = loadTex("..\\img\\container1_emiss.png");
-	//unsigned int flCookie = loadTex("..\\img\\cookie.png");
 
 	unsigned int texContainer0 = loadTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE);
 	unsigned int texContainer0Spec = loadTex("..\\img\\container1_spec.png", GL_REPEAT);
 	unsigned int texParquet0 = loadTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT);
 	unsigned int texParquet0Spec = loadTex("..\\img\\parquet0_spec.jpg", GL_REPEAT);
-	//unsigned int texGrass = loadTex("..\\img\\grass.png", GL_CLAMP_TO_EDGE);
 	//unsigned int texSkybox = loadCubemap("..\\img\\sky0", skyboxFaces);
 
-	////////////////////////////////////////
-	// Assets
-	
-	Model horse0("..\\assets\\horse0\\Rocking Horse.obj", false);
-	
+
 	////////////////////////////////////////
 	// Shaders
 
-	//shaders
-	
-	Shader shaderLights0("..\\shaders\\Lights.vs", "..\\shaders\\Lights.fs");
-	Shader shaderLamp("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
+	Shader shaderLights0("..\\shaders\\Lighting0.vs", "..\\shaders\\Lighting0.fs");
+	Shader shaderSingleColor("..\\shaders\\SingleColor.vs", "..\\shaders\\SingleColor.fs");
+	Shader shaderLightSpace("..\\shaders\\LightSpace.vs", "..\\shaders\\LightSpace.fs");
+	Shader shaderScreenDepth("..\\shaders\\ScreenTexture.vs", "..\\shaders\\ScreenTexture.fs");
+	Shader shaderVisualNormals("..\\shaders\\VisualNormals.vs", "..\\shaders\\VisualNormals.fs", "..\\shaders\\VisualNormals.gs");
 
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shaderLights0);
-	shaders.push_back(&shaderLamp);
+	shaders.push_back(&shaderSingleColor);
+	shaders.push_back(&shaderLightSpace);
+	shaders.push_back(&shaderScreenDepth);
+	shaders.push_back(&shaderVisualNormals);
 
-	//interface blocks
+	// interface blocks
 	unsigned int UBOmat;
 	glGenBuffers(1, &UBOmat);
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
@@ -524,43 +465,127 @@ int main() {
 	//shaderLights
 	//-----------------------------------
 	shaderLights0.use();
-
-	//shaderLights0.setVec3("fuMaterial.tex_ambient", );
-	shaderLights0.setInt("SLnum", 1);
-
+	
 	shaderLights0.setInt("fuMaterial.tex_diffuse0", 0);
 	shaderLights0.setInt("fuMaterial.tex_specular0", 1);
 
-	shaderLights0.setVec3("SLight[0].ambient", sLight0.getAmbient());
-	shaderLights0.setVec3("SLight[0].diffuse", sLight0.getDiffuse());
-	shaderLights0.setVec3("SLight[0].specular", sLight0.getSpecular());
-	shaderLights0.setVec3("SLight[0].pos", sLight0.getPos());
-	shaderLights0.setVec3("SLight[0].dir", sLight0.getDir());
+	shaderLights0.setDLight(dLight);
+	shaderLights0.setSLights(sLights);
+	shaderLights0.setPLights(pLight0);
 
-	glm::vec3 tmpAtten = sLight0.getAttenuation();
-	shaderLights0.setFloat("SLight[0].constant", tmpAtten.x);
-	shaderLights0.setFloat("SLight[0].linear", tmpAtten.y);
-	shaderLights0.setFloat("SLight[0].quadratic", tmpAtten.z);
-
-	shaderLights0.setFloat("SLight[0].outAngle", glm::cos(glm::radians(sLight0.getOutAngle())));
-	shaderLights0.setFloat("SLight[0].inAngle", glm::cos(glm::radians(sLight0.getInAngle())));
-
-	//shaderReflect (reflection)
+	//shaderLightSpace
 	//-----------------------------------
+
+
+	//shaderScreenDepth
+	//-----------------------------------
+	
+	shaderScreenDepth.use();
+	shaderScreenDepth.setInt("screenTex", 0);
+
+	////////////////////////////////////////
+	// Assets and Meshes
+
+	// Horse
+	Model rockingHorse("..\\assets\\horse0\\Rocking Horse.obj", false);
+	Object rocking_horse0(rockingHorse);
+
+	// Boxes
+	vector<Texture> boxTextures
+	{
+		loadTexTex("..\\img\\container1.png", GL_CLAMP_TO_EDGE, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\container1_spec.png", GL_CLAMP_TO_EDGE, TEXTURE_SPECULAR),
+	};
+
+	Mesh boxMesh(vertexDataToVertexVector(cube1vertices, sizeof(cube1vertices) / sizeof(float), VERTEX), boxTextures);
+	Object box0(boxMesh);
+	Object box1(boxMesh);
+	Object box2(boxMesh);
+
+	// Plane
+	vector<Texture> planeTextures
+	{
+		loadTexTex("..\\img\\parquet0_diffuse.jpg", GL_REPEAT, TEXTURE_DIFFUSE),
+		loadTexTex("..\\img\\parquet0_spec.jpg", GL_REPEAT, TEXTURE_SPECULAR),
+	};
+
+	Texture planeWallDiffuse = loadTexTex("..\\img\\wall.jpg", GL_REPEAT, TEXTURE_DIFFUSE);
+
+	Mesh plane0Mesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeTextures);
+	Object plane0(plane0Mesh);
+
+	// Wall
+	Mesh planeWallMesh(vertexDataToVertexVector(planeVertices, sizeof(planeVertices) / sizeof(float), VERTEX), planeWallDiffuse);
+	Object wall0(planeWallMesh);
+	Object wall1(planeWallMesh);
+	Object wall2(planeWallMesh);
+
+	// Light cube
+	Mesh lightCubeMesh(vertexDataToVertexVector(cube2vertices, sizeof(cube1vertices) / sizeof(float), VERTEX_P_T));
+	Object lightCube0(boxMesh);
+	
+	////////////////////////////////////////
+	// Static objects preparing
+
+	plane0.translate(glm::vec3(0.f, -0.502f, 0.f));
+	plane0.rescale(0.5f);
+
+	wall0.move(0, 0, -2.f);
+	wall0.rescale(0.2f);
+	wall0.rotateX(90.f);
+
+	wall1.move(-2.f, 0, 0);
+	wall1.rescale(0.2f);
+	wall1.rotateX(90.f);
+	wall1.rotateY(90.f);
+
+	wall2.move(2.f, 0, 0);
+	wall2.rescale(0.2f);
+	wall2.rotateX(90.f);
+	wall2.rotateY(90.f);
+
+	box0.translate(glm::vec3(-1.f, 0.f, 0.f));
+	box0.scale(glm::vec3(1.f, 1.f, 1.f));
+	box0.rotateY(10);
+	
+	box1.translate(glm::vec3(1.2f, -0.25f, 0.f));
+	box1.scale(glm::vec3(.5f, .5f, .5f));
+	box1.rotateY(-30);
+
+	box2.translate(1.2f, 4.f, 0.f);
+	box2.rescale(0.2f);
+
+	lightCube0.translate(sLight0.getPos());
+	lightCube0.rescale(0.05f);
+
+	rocking_horse0.translate(glm::vec3(0.f, -0.573f, -0.2f));
+	rocking_horse0.scale(glm::vec3(0.025f, 0.025f, 0.025f));
+	rocking_horse0.rotateY(-40.f);
+
+	//////////////////////////////////////////////
+	// Scene
+
+	Scene sceneMain;
+	
+	sceneMain.add(&plane0);
+
+	sceneMain.add(&wall0);
+	sceneMain.add(&wall1);
+	sceneMain.add(&wall2);
+
+	sceneMain.add(&box0);
+	sceneMain.add(&box1);
+	sceneMain.add(&box2);
+	
+	sceneMain.add(&rocking_horse0);
 
 	////////////////////////////////////////
 	// Pre-Render
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	//depth
-	//-------------------------------------
 	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_LESS);
-	//glDepthFunc(GL_LESS);
-
-	//gamma correction
-	//--------------------------------------
+	
 	//glEnable(GL_FRAMEBUFFER_SRGB);
 
 	glEnable(GL_MULTISAMPLE);
@@ -568,133 +593,200 @@ int main() {
 	////////////////////////////////////////
 	// RENDER
 	
+	bool firstFrame = true;
 	glfwSetTime(0);
 
 	//render cycle
 	//-----------------------------------
-	while (!glfwWindowShouldClose(window)) {
+	
+	Timer timerDebug;
+	timerDebug.start();
+
+	while (!glfwWindowShouldClose(window)) 
+	{
 		processInput(window);
 
 		////////////////////////////////////
-		// Set buffer
-		//glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
-
-		//states
-		glEnable(GL_DEPTH_TEST);
-
-		glClearColor(BLACK, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		// Framebuffers
+	
+		
 		////////////////////////////////////
+		
+
 		float time = glfwGetTime();
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
+		cam.setDeltaTime(deltaTime);
 
 		////////////////////////////////////
 		// Camera
 
-		glm::vec3 camPos = camera0.getPos();
-		glm::mat4 camView = camera0.getView();
+		glm::vec3 camPos = cam.getPos();
+		glm::vec3 camDir = cam.getDir();
+		glm::mat4 camView = cam.getView();
 
 		glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &camView[0]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+		
 		////////////////////////////////////
 		// Drawing
+		 
+		glClearColor(GREY_DARK_DARK, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 model = glm::mat4(1.f);
+		// Shadows
+		// ------------------------
 
-		//LIGHTS data (shaderLights0)
+		// Light Space
+
+		float near_plane = 0.1f, far_plane = 8.f;
+
+		glm::mat4 lightProjectionOrtho = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
+		glm::mat4 lightProjectionPerspective = glm::perspective(glm::radians(75.f), 100.f / 100.f, 1.f, 16.f);
+		/*glm::mat4 lightView = glm::lookAt(glm::vec3(-2.f, 4.f, -1.f),
+			glm::vec3(0.f, 0.f, 0.f),
+			glm::vec3(0.f, 1.f, 0.f));*/
+		glm::mat4 lightView = lightCam.getView();
+		glm::mat4 lightSpace = lightProjectionPerspective * lightView;
+
+		shaderLightSpace.use();
+		shaderLightSpace.setMat4("vuLightSpace", lightSpace);
+
+		glViewport(0, 0, c_shadowwidth, c_shadowheight);
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOdepthmap);
 		
-		float xMovePos = cos(time * 1.75f) * deltaTime * 0.1f;
+		glClear(GL_DEPTH_BUFFER_BIT);
+		
+		// Writing to depthmap
+		// ------------------------
+
+		sceneMain.draw(shaderLightSpace);
+
+		//ending
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+		// Main framebuffer
+		// ----------------------------------------
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		shaderLights0.use();
+		shaderLights0.setVec3("fuViewPos", camPos);
+
+		//shadow map
+		shaderLights0.setMat4("vuLightSpace", lightSpace);
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_2D, depthmap);
+		shaderLights0.setInt("shadowMap", 7);
+		
+		sceneMain.draw(shaderLights0);
+
+		lightCube0.draw(shaderSingleColor);
+		
+		// show depth map 
+		if (dirLightDepthDemo)
+		{
+			shaderScreenDepth.use();
+			shaderScreenDepth.setFloat("nearPlane", near_plane);
+			shaderScreenDepth.setFloat("farPlane", far_plane);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, depthmap);
+			glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+
+		// postprocess
+		// ----------------------------------
+		
+		// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glBindVertexArray(0);
+		
+		////////////////////////////////////////
+		// Events
+		////////////////////
+
+		if (firstFrame)
+		{
+			glfwSetTime(0);
+			time = 0;
+			firstFrame = false;
+		}
+
+		// Sunset
+		// --------------------------------------------------
+
+		float k = sin(time * 0.25f) * 0.5f + 0.5f;
+		glm::vec3 nightDiffuse = glm::vec3(DIFFUSE_DEFAULT) * k;
+		glm::vec3 nightAmbient = glm::vec3(AMBIENT_DEFAULT);
+		glm::vec3 nightSpecular = glm::vec3(SPECULAR_DEFAULT);
+
+		// evening begin
+		float _magic = 0.8f;      // night/day time range
+
+		float blueInNight = 0.3f; // 0f .. 1f blue impact
+		float redInDay = 0.4f;	  // below
+		float greenInDay = 0.2f;  // below
+		
+		if ((k < _magic) && (k > -_magic))
+		{
+			float blue = _magic - k;
+			nightDiffuse.z += blue * blueInNight;
+			nightAmbient.z += blue * blueInNight;
+		}
+		else
+		{
+			float red = (k - _magic) * redInDay;
+			float green = (k - _magic) * greenInDay;
+			nightDiffuse.r += red;
+			nightDiffuse.g += green;
+		}
+
+		dLight.setDiffuse(nightDiffuse);
+		dLight.setAmbient(nightAmbient);
+
+		auto tmp_elapsed = timerDebug.Elapsed();
+
+		if(tmp_elapsed % 50 == 0)
+		{
+			std::cerr << "Time: " << tmp_elapsed <<
+				". A = {" << vec3ToString(dLight.getAmbient()) <<
+				"}, D = {" << vec3ToString(dLight.getDiffuse()) << "}, K = " << k << "\n";
+			
+		}
+
+		shaderLights0.use();
+		shaderLights0.setDLight(dLight);
+		
+		lightCam.moveDir(glm::vec3(0.f, sin(time * .1f) * deltaTime * .03f, 0.f));
+
+		// Smth changes (objects transformations)
+		// --------------------------------------------------
+
+		float xMovePos = cos(time * 1.75f) * deltaTime * 0.15f;
 		float yMovePos = sin(time * 3.5f) * deltaTime * 0.05f;
 		float xMoveDir = cos(time * 1.75f) * deltaTime * 0.1f;
 
 		sLight0.movePos(glm::vec3(xMovePos, yMovePos, 0.f));
 		sLight0.moveDir(glm::vec3(xMoveDir, 0.f, 0.f));
 
-		shaderLights0.use();
-		shaderLights0.setVec3("SLight[0].pos", sLight0.getPos());
-		shaderLights0.setVec3("SLight[0].dir", sLight0.getDir());
+		lightCube0.translate(sLight0.getPos());
+		lightCube0.rotateZ(cos(time * 1.75f) * deltaTime * 12.f);
 
-		//plane
-		shaderLights0.setVec3("fuViewPos", camPos);
-		shaderLights0.setFloat("fuMaterial.shininess", 256.f);
-
-		model = glm::mat4(1.f);
-		shaderLights0.setMat4("vuModel", model);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texParquet0);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texParquet0Spec);
-		glBindVertexArray(VAOplane);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		//cubes
-		shaderLights0.setFloat("fuMaterial.shininess", 128.f);
+		rocking_horse0.rotateZ(cos(time * 1.25f) * deltaTime * 6.f);
 		
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-1.2f, 0.f, 0.f));
-		model = glm::rotate(model, glm::radians(-20.f), glm::vec3(.0f, 1.f, .0f));
-		shaderLights0.setMat4("vuModel", model);
+		box2.move(0, -((9.8f * 0.1f * time) * deltaTime), 0);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texContainer0);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texContainer0Spec);
-		glBindVertexArray(VAOcube);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(1.0f, -0.25f, 0.f));
-		model = glm::rotate(model, glm::radians(30.f), glm::vec3(.0f, 1.f, .0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-
-		shaderLights0.setMat4("vuModel", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		//horse
-		shaderLights0.setFloat("fuMaterial.shininess", 32.f);
-		
-
-		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(-0.15f, -0.55f, -0.2f));
-		model = glm::rotate(model, glm::radians(-40.f), glm::vec3(0.0f, 1.f, .0f));
-		model = glm::rotate(model, glm::radians(sin(time)) * 5.f, glm::vec3(.0f, 0.f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.025f, 0.025f, 0.025f));
-
-		shaderLights0.setMat4("vuModel", model);
-		horse0.draw(shaderLights0);
-
-		//light cube
-		shaderLamp.use();
-
-		model = glm::mat4(1.f);
-		model = glm::translate(model, sLight0.getPos());
-		model = glm::scale(model, glm::vec3(0.04f, 0.04f, 0.04f));
-		model = glm::rotate(model, glm::radians(sin(time * 1.75f) * 8.5f), glm::vec3(0.f, 0.f, 1.f));
-
-		shaderLamp.setMat4("vuModel", model);
-
-		glBindVertexArray(VAOcube);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		//postprocess
-		//----------------------------------
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
-
-		glBindVertexArray(0);
-		
 		////////////////////////////////////
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	timerDebug.end();
 
 	//shader uniforms log
 	shadersLogs(shaders);
@@ -704,11 +796,18 @@ int main() {
 
 	glDeleteBuffers(1, &VBOcube);
 	glDeleteBuffers(1, &VBOplane);
+	glDeleteBuffers(1, &VBOskybox);
+	glDeleteBuffers(1, &quadVBO);
 	glDeleteVertexArrays(1, &VAOcube);
 	glDeleteVertexArrays(1, &VAOplane);
+	glDeleteVertexArrays(1, &VAOskybox);
+	glDeleteVertexArrays(1, &quadVAO);
 
 	shaderLights0.suicide();
-	shaderLamp.suicide();
+	shaderLightSpace.suicide();
+	shaderSingleColor.suicide();
+	shaderScreenDepth.suicide();
+	shaderVisualNormals.suicide();
 
 	glfwTerminate();
 	system("pause");
@@ -719,57 +818,70 @@ void framebuffer_size_callback(GLFWwindow* window, int x, int y) {
 	glViewport(0, 0, x, y);
 }
 
-void cursor_pos_callback(GLFWwindow* window, double xIn, double yIn)
-{
-	float _xIn = static_cast<float>(xIn);
-	float _yIn = static_cast<float>(yIn);
+void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
 
 	if (firstCursor) {
-		xLast = _xIn;
-		yLast = _yIn;
+		xLast = xPos;
+		yLast = yPos;
 		firstCursor = false;
 	}
+	float xOffset = xPos - xLast;
+	float yOffset = yLast - yPos;
+	xLast = xPos;
+	yLast = yPos;
+	float sensitivity = 0.02f;
+	yaw += xOffset * sensitivity;
+	pitch += yOffset * sensitivity;
 
-	float xOffset = _xIn - xLast;
-	float yOffset = yLast - _yIn;
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
 
-	xLast = _xIn;
-	yLast = _yIn;
-
-	camera0.processMouseMovement(xOffset, yOffset);
+	glm::vec3 dir;
+	dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	dir.y = sin(glm::radians(pitch));
+	dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cam.setDir(glm::normalize(dir));
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int modes) {
 
 	//flashlight
-	if ((key == GLFW_KEY_L) && (action == GLFW_PRESS)) {
+	if ((key == GLFW_KEY_L) && (action == GLFW_PRESS)) 
+	{
 		if (flActive)
 			flActive = false;
 		else
 			flActive = true;
 	}
+
+	//dir light depth demo
+	if ((key == GLFW_KEY_M) && (action == GLFW_PRESS))
+	{
+		if (dirLightDepthDemo)
+			dirLightDepthDemo = false;
+		else
+			dirLightDepthDemo = true;
+	}
 }
 
-void processInput(GLFWwindow* window)
-{
+void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 
 	//camera movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera0.move(Camera::Direction::FRONT, deltaTime);
+		cam.moveFront();
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera0.move(Camera::Direction::BACK, deltaTime);
+		cam.moveBack();
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera0.move(Camera::Direction::LEFT, deltaTime);
+		cam.moveLeft();
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera0.move(Camera::Direction::RIGHT, deltaTime);
-	}
-
+		cam.moveRight();
+	} 
 }
 
 void shadersLogs(const std::vector<Shader*>& shaders)
@@ -778,4 +890,9 @@ void shadersLogs(const std::vector<Shader*>& shaders)
 	{
 		cout << '\n' << x->getInfoLog();
 	}
+}
+
+void drawScene(const Shader& shader)
+{
+	
 }

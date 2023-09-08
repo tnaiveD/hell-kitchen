@@ -2,6 +2,9 @@
 #define LIGHT_H
 
 #include <glm\glm.hpp>
+#include <glm\vector_relational.hpp>
+
+#include <vector>
 #include "Timer.h"
 
 /////////////////////////////////////////////
@@ -33,62 +36,72 @@
 #define ATTENUATION600  glm::vec3(1.0f,     0.007f,  0.0002f)
 #define ATTENUATION3250 glm::vec3(1.0f,     0.0014f, 0.000007f)
 
+/////////////////////////////////////
+// 
+
+struct ShadowMap;
+
 /*
 * ################################################
-* # LIGHT CLASS						 
+* #				   LIGHT CLASS					 #						 
 * ################################################
 */
 
-/////////////////////////////////////
+///////////////////////////////////////////////////
 // Abstract parent
-/////////////////////////////////////
+//////////////////////////
 
 class Light 
 {
 public:
+	
 	Light();
+	virtual ~Light() = default;
 
 	//Set
-	void setAmbient(glm::vec3);
-	void setDiffuse(glm::vec3);
-	void setSpecular(glm::vec3);
-	void setAttenuation(glm::vec3);
+	void setAmbient(glm::vec3 color);
+	void setDiffuse(glm::vec3 color);
+	void setSpecular(glm::vec3 color);
+	void setAttenuation(glm::vec3 const_linear_quadr);
+	void setActive(bool state);
 
 	//Modify
-	void multAmbient(float);
-	void multDiffuse(float);
-	void multSpecular(float);
+	void multAmbient(float k);
+	void multDiffuse(float k);
+	void multSpecular(float k);
+
+	void addToAmbient(float k);
+	void addToDiffuse(float k);
+	void addToSpecular(float k);
 
 	//Get
 	glm::vec3 getAmbient() const;
 	glm::vec3 getDiffuse() const;
 	glm::vec3 getSpecular() const;
 	glm::vec3 getAttenuation() const;
+	bool isActive() const;
 
 private:
-	unsigned char id;
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
 	glm::vec3 specular;
 	glm::vec3 attenuation;
+	bool active;
 };
 
-/////////////////////////////////////
+/////////////////////////////////////////////////////
 // Directional light
-/////////////////////////////////////
-
-#define DIRECTION_DEFAULT glm::vec3(-1.0f, -3.0f, 0.25f)
+//////////////////////////
 
 class DirectionalLight : public Light
 {
 public:
 
 	//Direction parameter
-	DirectionalLight();
-	DirectionalLight(glm::vec3);
+	DirectionalLight(glm::vec3 = glm::vec3(-1.0f, -3.0f, 0.25f));
 
 	//Set
-	void setDir(glm::vec3);
+	void setDir(glm::vec3 dir);
 
 	//Get
 	glm::vec3 getDir() const;
@@ -97,59 +110,79 @@ private:
 	glm::vec3 dir;
 };
 
-/////////////////////////////////////
+////////////////////////////////////////////////////////
 // Point light
-/////////////////////////////////////
+////////////////////////////
 
 class PointLight : public Light
 {
 public:
 
 	//Position parameter
-	PointLight(glm::vec3);
+	PointLight(glm::vec3 pos = glm::vec3(0.f, 1.5f, 0.f));
+	PointLight(float posX, float posY, float posZ);
 
 	//Set
-	void setPos(glm::vec3);
-	
+	void setPos(glm::vec3 pos);
+	void setPos(float posX, float posY, float posZ);
+
 	//Get
 	glm::vec3 getPos() const;
-	
+	unsigned getId() const;
+	static unsigned getCount();
+
 private:
 	glm::vec3 pos;
+
+	unsigned id;
+
+	static unsigned count;
 };
 
-/////////////////////////////////////
+
+////////////////////////////////////////////////////
 // Spotlight
-/////////////////////////////////////
+//////////////////////////
 
 class SpotLight : public Light
 {
 public:
-
 	//Position and Direction parameters
-	SpotLight(glm::vec3, glm::vec3);
-
+	SpotLight(glm::vec3 pos = glm::vec3(0.f, 2.f, 0.f), glm::vec3 dir = glm::vec3(0.f, -1.f, 0.f));
+	SpotLight(float posX, float posY, float posZ, float dirX, float dirY, float dirZ);
+	
 	//Set
-	void setPos(glm::vec3);
-	void setDir(glm::vec3);
-	void setAngles(float, float);
+	void setPos(glm::vec3 pos);
+	void setPos(float posX, float posY, float posZ);
+	void setDir(glm::vec3 dir);
+	void setAngles(float outAngle, float inAngle);
+	void setRadius(float radius);
 
 	//Get
 	glm::vec3 getPos() const;
 	glm::vec3 getDir() const;
 	float getOutAngle() const;
 	float getInAngle() const;
+	unsigned getId() const;
+
+	static unsigned getCount();
 
 	//Other
-	void movePos(glm::vec3);
-	void moveDir(glm::vec3);
+	void movePos(glm::vec3 pos);
+	void moveDir(glm::vec3 dir);
 
 private:
+
 	glm::vec3 pos;
 	glm::vec3 dir;
 	float outAngle;
 	float inAngle;
+
+	unsigned id;
+
+	static unsigned count;
 };
+
 
 // Flashlight
 // --------------------------------------
@@ -157,14 +190,23 @@ private:
 class FlashLight final : public SpotLight
 {
 public:
-	//in process...
+	//in dev...
 private:
 	Timer timer;
 };
 
-/////////////////////////////////////////
+//////////////////////////////////////////////
+// Shadows
+///////////////////////
+
+struct ShadowMap
+{
+	unsigned int textureID;
+};
+
+//////////////////////////////////////////////
 // Colors
-/////////////////////////////////////////
+///////////////////////
 
 //colors
 //------------------------------

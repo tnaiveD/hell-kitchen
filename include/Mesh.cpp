@@ -1,5 +1,31 @@
 #include "Mesh.h"
 
+///////////////////////////////////////////
+// VertexVector
+/////////////////////
+
+VertexVector::VertexVector() {}
+
+VertexVector::VertexVector(const std::vector<Vertex>& vertexVec, VertexType vertexType)
+{
+	this->vertexVec = vertexVec;
+	this->vertexType = vertexType;
+}
+
+std::vector<Vertex> VertexVector::getVertexVector() const
+{
+	return vertexVec;
+}
+
+VertexType VertexVector::getVertexType() const
+{
+	return vertexType;
+}
+
+///////////////////////////////////////////
+// Mesh
+/////////////////////
+
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
 {
 	this->vertices = vertices;
@@ -9,19 +35,30 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 	setupMesh();
 }
 
-Mesh::Mesh(vector<Vertex> vertices, vector<Texture> textures)
+Mesh::Mesh(const VertexVector& vertexVec, vector<Texture> textures)
 {
-	this->vertices = vertices;
+	vertices = vertexVec.getVertexVector();
+	this->vertexVec = vertexVec;
 	this->textures = textures;
 
 	setupMesh();
 }
 
 // Vertices and single texture
-Mesh::Mesh(vector<Vertex> vertices, Texture texture)
+Mesh::Mesh(const VertexVector& vertexVec, Texture texture)
 {
-	this->vertices = vertices;
-	this->textures.push_back(texture);
+	vertices = vertexVec.getVertexVector();
+	this->vertexVec = vertexVec;
+	textures.push_back(texture);
+
+	setupMesh();
+}
+
+// No textures
+Mesh::Mesh(const VertexVector& vertexVec)
+{
+	vertices = vertexVec.getVertexVector();
+	this->vertexVec = vertexVec;
 
 	setupMesh();
 }
@@ -46,42 +83,35 @@ void Mesh::setupMesh()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 	
-	if (this->indices.size() > 0)
-	{
-		//normal
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+	//normal
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+	
+	//textures
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	
+	//tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+	
+	//bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
+	
+	//ids
+	glEnableVertexAttribArray(5);
+	glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIDs));
 
-		//textures
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-	}
-	else /* receive only texture coords as second vertex layer */
-	{	
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-	}
-	////tangent
-	//glEnableVertexAttribArray(3);
-	//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
-	//
-	////bitangent
-	//glEnableVertexAttribArray(4);
-	//glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
-	//
-	////ids
-	//glEnableVertexAttribArray(5);
-	//glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIDs));
-
-	////weights
-	//glEnableVertexAttribArray(6);
-	//glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights));
+	//weights
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights));
 
 	glBindVertexArray(0);
 }
 
 
-void Mesh::draw(Shader& shader)
+void Mesh::draw(const Shader& shader) const
 {
 	unsigned int diffuseNr = 0;
 	unsigned int specularNr = 0;
@@ -89,6 +119,8 @@ void Mesh::draw(Shader& shader)
 	//unsigned int heightNr = 0;
 
 	shader.use();
+	shader.setFloat("fuMaterial.shininess", material.shininess);
+
 	for (int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -118,13 +150,19 @@ void Mesh::draw(Shader& shader)
 		string tmp = "fuMaterial." + name + number;
 		shader.setInt(tmp, i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	glBindVertexArray(VAO);
 	
 	//Draw full mesh 
 	if (indices.size() > 0)
+	{
 		glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+		glActiveTexture(GL_TEXTURE0);
+		return;
+	}
 
 	//or
 
@@ -138,15 +176,26 @@ void Mesh::draw(Shader& shader)
 	if (vertices.size() == 36)
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	resetSamplers2D();
+
 	glBindVertexArray(0);
+}
+
+void resetSamplers2D()
+{
+	for (int i = 0; i < 7; i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 	glActiveTexture(GL_TEXTURE0);
 }
 
-vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertexType)
+vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertType)
 {
 	vector<Vertex> vec;
 	
-	switch (vertexType)
+	switch (vertType)
 	{
 		case VERTEX: //3 pos coords, 3 normal coords, 2 tex coords 
 		{	
@@ -154,17 +203,16 @@ vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, Verte
 			while (i < size)
 			{
 				Vertex vert;
-				vert.position.x = vertexData[i++];
-				vert.position.y = vertexData[i++];
-				vert.position.z = vertexData[i++];
-				vert.normal.x = vertexData[i++];
-				vert.normal.y = vertexData[i++];
-				vert.normal.z = vertexData[i++];
-				vert.texCoords.x = vertexData[i++];
-				vert.texCoords.y = vertexData[i++];
+				vert.position.x = *(vertexData++); i++;
+				vert.position.y = *(vertexData++); i++;
+				vert.position.z = *(vertexData++); i++;
+				vert.normal.x = *(vertexData++); i++;
+				vert.normal.y = *(vertexData++); i++;
+				vert.normal.z = *(vertexData++); i++;
+				vert.texCoords.x = *(vertexData++); i++;
+				vert.texCoords.y = *(vertexData++); i++;
 				vec.push_back(vert);
 			}
-
 			break;
 		}
 		case VERTEX_P_T: //3 pos coords, 2 tex coords
@@ -173,44 +221,20 @@ vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, Verte
 			while (i < size)
 			{
 				Vertex vert;
-				vert.position.x = vertexData[i++];
-				vert.position.y = vertexData[i++];
-				vert.position.z = vertexData[i++];
-				vert.texCoords.x = vertexData[i++];
-				vert.texCoords.y = vertexData[i++];
+				vert.position.x = *(vertexData++); i++;
+				vert.position.y = *(vertexData++); i++;
+				vert.position.z = *(vertexData++); i++;
+				vert.texCoords.x = *(vertexData++); i++;
+				vert.texCoords.y = *(vertexData++); i++;
 				vec.push_back(vert);
 			}
 			break;
 		}
-		default: break;
 	}
 	return vec;
 }
 
-void flipTextureCoords(float* vertices, size_t size, VertexType vertexType)
-{
-	int n = size / sizeof(float);
-	if (vertexType == VERTEX)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			if (i % 6 == 0) vertices[i] = 1.f - vertices[i];
-			if (i % 7 == 0) vertices[i] = 1.f - vertices[i];
-		}
-	}
-	else
-		if (vertexType == VERTEX_P_T)
-		{
-			for (int i = 0; i < n / 5; i++)
-			{
-				for (int j = 0; j < 5; j++)
-				{
-					if (j == 4) *vertices = 1.f - *vertices;
-					vertices++;
-				}
-			}
-		}
-}
+Material::Material() : shininess(32.f), name("") {}
 
 ////////////////////////////////////////////////
 // Texture loading

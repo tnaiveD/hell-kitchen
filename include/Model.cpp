@@ -5,7 +5,7 @@ Model::Model(const string& path, bool gamma = false) : gammaCorrection(gamma)
 	loadModel(path);
 }
 
-void Model::draw(Shader& shader)
+void Model::draw(const Shader& shader)
 {
 	for (int i = 0; i < meshes.size(); i++)
 	{
@@ -66,6 +66,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
+	VertexType vertexType;
+
+	bool normalsCheck = false;
+	bool textureCoordsCheck = false;
 
 	//retrieve vertices
 	for (int i = 0; i < mesh->mNumVertices; i++)
@@ -84,6 +88,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 			vertVec.y = mesh->mNormals[i].y;
 			vertVec.z = mesh->mNormals[i].z;
 			vertex.normal = vertVec;
+			normalsCheck = true;
 		}
 
 		if (mesh->mTextureCoords[0])
@@ -92,12 +97,26 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 			texVec.x = mesh->mTextureCoords[0][i].x;
 			texVec.y = mesh->mTextureCoords[0][i].y;
 			vertex.texCoords = texVec;
+			textureCoordsCheck = true;
 		}
 		else
 			vertex.texCoords = vec2(0.0f, 0.0f);
 
 		vertices.push_back(vertex);
 	}
+
+	if ((normalsCheck) && (textureCoordsCheck))
+		vertexType = VERTEX;
+	else
+		if (normalsCheck)
+			vertexType = VERTEX_P_N;
+		else
+			if (textureCoordsCheck)
+				vertexType = VERTEX_P_T;
+			else
+				vertexType = VERTEX_P;
+
+
 
 	//indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -123,7 +142,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	}
 	
-	return Mesh(vertices, indices, textures);
+	Mesh res(vertices, indices, textures);
+	res.verticesType = vertexType;
+
+	return res;
 }
 
 vector<Texture> Model::loadTextures(aiMaterial* material, aiTextureType type, TextureType typeName)

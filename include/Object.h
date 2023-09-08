@@ -25,28 +25,48 @@ class Object
 public:
 
 	Object();
-	Object(std::vector<Mesh>& meshes, glm::vec3 pos);
-	Object(std::vector<Mesh>& meshes);
-	Object(Mesh& meshes, glm::vec3 pos);
-	Object(Mesh& meshes);
+	Object(const Model& model);
+	Object(const std::vector<Mesh>& meshes, glm::vec3 pos);
+	Object(const std::vector<Mesh>& meshes);
+	Object(const Mesh& mesh, glm::vec3 pos);
+	Object(const Mesh& mesh);
 
+	////////////////////////////////
 	// Get
+
 	glm::vec3 getPos() const;
 	glm::mat4 getModel() const;
 
-	// Draw
-	void draw(Shader&);
-
+	////////////////////////////////
 	// Transforms
-	void moveTo(glm::vec3 coords);
-	void rotate(float angle, glm::vec3 axes);
+
+	void translate(glm::vec3 coords);
+	void translate(float x, float y, float z);
+	void rotateX(float angle);
+	void rotateY(float angle);
+	void rotateZ(float angle);
 	void scale(glm::vec3 scope);
-	void flipVertical();
+	
+	// ...
+	void move(float x, float y, float z);
+	void rescale(float);
+	
+	////////////////////////////////
+	// Draw
+
+	void draw(const Shader&);
+	void draw(Shader*);
 
 private:
 	vector<Mesh> meshes;
 	glm::mat4 model;
+	
+	// Object actual properties
 	glm::vec3 pos;
+	glm::vec3 angles;
+	glm::vec3 scope;
+
+	void updateModelMatrix();
 };
 
 
