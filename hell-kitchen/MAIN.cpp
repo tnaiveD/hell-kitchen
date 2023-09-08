@@ -9,8 +9,7 @@
 #include "stb_image.h"
 
 #include "Shader.h"
-#include "CamFPS.h"
-#include "Materials.h"
+#include "Camera.h"
 #include "Light.h"
 #include "Object.h"
 #include "Shader.h"
@@ -231,7 +230,7 @@ int main() {
 	{	
 		float scaleRand = 1.f / (rand() % 9 + 1) + 0.5f;
 		glm::vec3 positionRand(static_cast<float>(rand() % 15 - 7.f) + (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)),
-							   -.502,
+							   0.f,
 							   static_cast<float>(rand() % 15 - 7.f) + (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
 
 		grass.push_back(Object(grassMeshes, positionRand));
@@ -251,38 +250,7 @@ int main() {
 		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 
-	//picture 
-	float pictureVertices[] =
-	{
-		-1.f, 2.f, 0.f,		0.f, 0.f,
-		-1.f, 0.f, 0.f,		0.f, 1.f,
-		 1.f, 0.f, 0.f,		1.f, 1.f,
-
-		-1.f, 2.f, 0.f,		0.f, 0.f,
-		 1.f, 2.f, 0.f,		1.f, 0.f,
-		 1.f, 0.f, 0.f,		1.f, 1.f
-	};
-
-	flipTextureCoords(pictureVertices, sizeof(pictureVertices), VERTEX_P_T);
 	
-	unsigned int VAOpicture;
-	glGenVertexArrays(1, &VAOpicture);
-	glBindVertexArray(VAOpicture);
-
-	unsigned int VBOpicture;
-	glGenBuffers(1, &VBOpicture);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOpicture);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(pictureVertices), pictureVertices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float) * 5, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, 0, sizeof(float) * 5, (void*)(sizeof(float) * 3));
-
-	glBindVertexArray(0);
-
-	bool checkFlip = false;
-
 	//skybox
 
 	std::vector<std::string> skyboxFaces{
@@ -405,40 +373,6 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 
 	glBindVertexArray(0);
-	
-	//frame, renderbuffer
-	//--------------------------------------
-
-	//unsigned int FBO0;
-	//glGenFramebuffers(1, &FBO0);
-	//glBindFramebuffer(GL_FRAMEBUFFER, FBO0);
-	//unsigned int FBOtex;
-	//glGenTextures(1, &FBOtex);
-	//glBindTexture(GL_TEXTURE_2D, FBOtex);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOtex, 0);
-	////or?
-	//glTexImage2D(
-	//	GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0,
-	//	GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
-	//);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, FBOtex, 0);*/
-
-	////renderbuffers
-	//unsigned int RBO;
-	//glGenRenderbuffers(1, &RBO);
-	//glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
-
-	////check
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//{
-	//	cout << "ERROR: Framebuffer status NOT_COMPLETE\n";
-	//}
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//framebuffer
 	unsigned int FBO;
@@ -452,8 +386,8 @@ int main() {
 
 	glTexImage2D(GL_TEXTURE, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texBuffer, 0);
 
@@ -751,9 +685,6 @@ int main() {
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteVertexArrays(1, &VAOskybox);
 
-	glDeleteFramebuffers(1, &FBO0);
-	glDeleteRenderbuffers(1, &RBO);
-
 	glDeleteBuffers(1, &UBOmat);
 
 	shader0.suicide();
@@ -797,7 +728,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -815,69 +745,10 @@ void processInput(GLFWwindow* window)
 		camera0.move(Camera::Direction::LEFT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cam.moveRight();
+		camera0.move(Camera::Direction::RIGHT, deltaTime);
 	}
 
 }
-
-unsigned int loadTex(const char* path, GLenum mode) {
-	unsigned int id;
-	glGenTextures(1, &id);
-	int imgW, imgH, imgCh;
-	unsigned char* imgData = stbi_load(path, &imgW, &imgH, &imgCh, 0);
-	//stbi_set_flip_vertically_on_load(true);
-	if (imgData) {
-		GLenum format = 0;
-		if (imgCh == 1) format = GL_RED;
-		if (imgCh == 3) format = GL_RGB;
-		if (imgCh == 4) format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, id);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, imgW, imgH, 0, format, GL_UNSIGNED_BYTE, imgData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		if (mode == GL_REPEAT)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-		else if(mode == GL_CLAMP_TO_EDGE)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	else
-		cout << "Warning: Texture not loaded\n";
-	stbi_image_free(imgData);
-
-	return id;
-};
-
-unsigned int loadCubemap(std::string dirPath, std::vector<std::string> faces)
-{
-	unsigned int id;
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-
-	int w, h, ch;
-	for (int i = 0; i < faces.size(); i++)
-	{
-		unsigned char* data = stbi_load((dirPath + "\\\\" + faces[i]).c_str(), &w, &h, &ch, 0);
-		if (!data)
-		{
-			cout << "Warning: loadCubemap(). texture \"" << faces[i] << "\" not found\n";
-			stbi_image_free(data);
-			continue;
-		}
-
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		stbi_image_free(data);
-	}
-
 
 void shadersLogs(const std::vector<Shader*>& shaders)
 {

@@ -20,7 +20,7 @@ public:
 	unsigned int id;
 
 	Shader() = delete;
-	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath);
+	explicit Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* geometrySourcePath = NULL);
 	
 	void use();
 	

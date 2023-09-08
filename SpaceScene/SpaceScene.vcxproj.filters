@@ -13,12 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Шейдеры">
+      <UniqueIdentifier>{79a33574-49f2-4a7b-a638-83b4f4392255}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SpaceScene.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\CamFPS.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="..\include\gl.c">
@@ -42,11 +42,11 @@
     <ClCompile Include="..\include\stb_image.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\Camera.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\CamFPS.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\gl.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -71,31 +71,43 @@
     <ClInclude Include="..\include\Timer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Camera.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\Lights.fs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="..\shaders\Lights.vs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="..\shaders\Postprocess.fs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="..\shaders\Postprocess.vs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="..\shaders\Skybox.fs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="..\shaders\Skybox.vs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
     <None Include="..\shaders\Instances.fs">
-      <Filter>Файлы ресурсов</Filter>
+      <Filter>Шейдеры</Filter>
     </None>
     <None Include="..\shaders\Instances.vs">
-      <Filter>Файлы ресурсов</Filter>
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Lights.fs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Lights.vs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Postprocess.fs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Postprocess.vs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Skybox.fs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Skybox.vs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Explode.gs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Explode.fs">
+      <Filter>Шейдеры</Filter>
+    </None>
+    <None Include="..\shaders\Explode.vs">
+      <Filter>Шейдеры</Filter>
     </None>
   </ItemGroup>
 </Project>

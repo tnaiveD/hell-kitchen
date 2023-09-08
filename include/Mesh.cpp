@@ -142,7 +142,7 @@ void Mesh::draw(Shader& shader)
 	glActiveTexture(GL_TEXTURE0);
 }
 
-vector<Vertex> vertexDataToVertexVector(const float* vertexData, size_t size, VertexType vertexType)
+vector<Vertex> vertexDataToVertexVector(const float* vertexData, int size, VertexType vertexType)
 {
 	vector<Vertex> vec;
 	

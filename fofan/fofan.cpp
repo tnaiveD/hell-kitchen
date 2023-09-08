@@ -31,19 +31,23 @@ void shadersLogs(const std::vector<Shader*>&);
 using std::cout;
 
 /////////////////////////////////////////
-// Camera
-
-CamFPS cam(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+// Speed
 
 //delta time
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
 
-//mouse view
-float xLast = 0.0f, yLast = 0.0f;
-float yaw = -90.0f;
-float pitch = 0.0f;
+/////////////////////////////////////////
+// Camera
+
+float xLast = SCR_WIDTH / 2;
+float yLast = SCR_HEIGHT / 2;
+float yaw = -100.0f;
+float pitch = -30.f;
+
 bool firstCursor = true;
+
+Camera camera0(glm::vec3(1.f, 1.f, 3.f), glm::vec3(0.f, 1.f, 0.f), yaw, pitch);
 
 /////////////////////////////////////////
 // Lights
@@ -466,7 +470,7 @@ int main() {
 
 	sLight0.multAmbient(0.2f);
 	sLight0.multDiffuse(5.f);
-	sLight0.multSpecular(4.f);
+	sLight0.multSpecular(2.5f);
 
 	////////////////////////////////////////
 	// Textures
@@ -586,14 +590,13 @@ int main() {
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		cam.setDeltaTime(deltaTime);
+
 
 		////////////////////////////////////
 		// Camera
 
-		glm::vec3 camPos = cam.getPos();
-		glm::vec3 camDir = cam.getDir();
-		glm::mat4 camView = cam.getView();
+		glm::vec3 camPos = camera0.getPos();
+		glm::mat4 camView = camera0.getView();
 
 		glBindBuffer(GL_UNIFORM_BUFFER, UBOmat);
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &camView[0]);
@@ -656,6 +659,7 @@ int main() {
 
 		//horse
 		shaderLights0.setFloat("fuMaterial.shininess", 32.f);
+		
 
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-0.15f, -0.55f, -0.2f));
@@ -715,29 +719,24 @@ void framebuffer_size_callback(GLFWwindow* window, int x, int y) {
 	glViewport(0, 0, x, y);
 }
 
-void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
+void cursor_pos_callback(GLFWwindow* window, double xIn, double yIn)
+{
+	float _xIn = static_cast<float>(xIn);
+	float _yIn = static_cast<float>(yIn);
 
 	if (firstCursor) {
-		xLast = xPos;
-		yLast = yPos;
+		xLast = _xIn;
+		yLast = _yIn;
 		firstCursor = false;
 	}
-	float xOffset = xPos - xLast;
-	float yOffset = yLast - yPos;
-	xLast = xPos;
-	yLast = yPos;
-	float sensitivity = 0.02f;
-	yaw += xOffset * sensitivity;
-	pitch += yOffset * sensitivity;
 
-	if (pitch > 89.0f) pitch = 89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
+	float xOffset = _xIn - xLast;
+	float yOffset = yLast - _yIn;
 
-	glm::vec3 dir;
-	dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	dir.y = sin(glm::radians(pitch));
-	dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cam.setDir(glm::normalize(dir));
+	xLast = _xIn;
+	yLast = _yIn;
+
+	camera0.processMouseMovement(xOffset, yOffset);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int modes) {
@@ -751,24 +750,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window)
+{
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 
 	//camera movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cam.moveFront();
+		camera0.move(Camera::Direction::FRONT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cam.moveBack();
+		camera0.move(Camera::Direction::BACK, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cam.moveLeft();
+		camera0.move(Camera::Direction::LEFT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cam.moveRight();
+		camera0.move(Camera::Direction::RIGHT, deltaTime);
 	}
+
 }
 
 void shadersLogs(const std::vector<Shader*>& shaders)

@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
+Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath, const char* geometrySourcePath) {
 
 	//Read shader source from files
 	//------------------------------
@@ -27,8 +27,8 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 		vertexSource = vertexStream.str();
 		fragmentSource = fragmentStream.str();
 	}
-	catch (std::ifstream::failure e) {
-		std::cout << "Error: SHADER_CPP. File not successfuly read\n";
+	catch (...) {
+		std::cerr << "Error: Shader. File not successfuly read\n";
 	}
 	const char* vertexShaderSource = vertexSource.c_str();
 	const char* fragmentShaderSource = fragmentSource.c_str();
@@ -45,7 +45,7 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertexShader, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", " 
+		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
 				  << fragmentSourcePath << "). Vertex Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
@@ -56,25 +56,73 @@ Shader::Shader(const char* vertexSourcePath, const char* fragmentSourcePath) {
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragmentShader, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
+		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
 			<< fragmentSourcePath << "). Fragment Shader compilation FAILED\n" << infoLog << '\n';
 	}
 
-	//shader program
+	//geometry
+	unsigned int geometryShader;
+	bool geometryCompileSuccess = false;
+	if (geometrySourcePath)
+	{
+		geometryCompileSuccess = true;
+		std::ifstream geometryIfStream;
+		std::string geometrySource;
+
+		geometryIfStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+		try
+		{
+			geometryIfStream.open(geometrySourcePath);
+
+			std::stringstream geometrySSstream;
+			geometrySSstream << geometryIfStream.rdbuf();
+			geometryIfStream.close();
+			geometrySource = geometrySSstream.str();
+
+		}
+		catch(std::ifstream::failure& e)
+		{
+			std::cerr << "Error: Geometry Shader. File not successfuly read\n";
+			geometryCompileSuccess = false;
+		}
+
+		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+		const char* geometrySourceCStr = geometrySource.c_str();
+		glShaderSource(geometryShader, 1, &geometrySourceCStr, NULL);
+		glCompileShader(geometryShader);
+
+		glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(geometryShader, sizeof(infoLog), NULL, infoLog);
+			std::cerr << "Error: Shader (" << vertexSourcePath << ", "
+				<< fragmentSourcePath << "). Fragment Shader compilation FAILED\n" << infoLog << '\n';
+			geometryCompileSuccess = false;
+		}
+	}
+
+	//shader program link
 	id = glCreateProgram();
+	
 	glAttachShader(id, vertexShader);
 	glAttachShader(id, fragmentShader);
+	if(geometryCompileSuccess) glAttachShader(id, geometryShader);
+
 	glLinkProgram(id);
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
-	if (!success) {
+
+	if (!success) 
+	{
 		glGetProgramInfoLog(id, sizeof(infoLog), NULL, infoLog);
-		std::cout << "Error: SHADER_CPP (" << vertexSourcePath << ", "
+		std::cerr << "Error: Shader (" << vertexSourcePath << ", "
 			<< fragmentSourcePath << "). Shader Program linking FAILED\n" << infoLog << '\n';
 	}
 
 	//clear
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	if (geometryCompileSuccess) glDeleteShader(geometryShader);
 
 	//uniforms check
 	this->infoLog += std::string(vertexSourcePath) + std::string(", ") +

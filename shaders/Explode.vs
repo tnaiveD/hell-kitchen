@@ -25,6 +25,6 @@ uniform mat4 vuModel;
 void main(){
 	vPos = vec3(vuModel * vec4(inPos, 1.0));
 	vNormals = mat3(transpose(inverse(vuModel))) * inNormals;
-	vTex = inTex;
+	vs_out.texCoord = inTex;
 	gl_Position = bProjection * bView * vuModel * vec4(inPos, 1.0);
 }

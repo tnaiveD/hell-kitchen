@@ -128,7 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\CamFPS.cpp" />
+    <ClCompile Include="..\include\Camera.cpp" />
     <ClCompile Include="..\include\gl.c" />
     <ClCompile Include="..\include\Light.cpp" />
     <ClCompile Include="..\include\Mesh.cpp" />
@@ -139,7 +139,7 @@
     <ClCompile Include="SpaceScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\CamFPS.h" />
+    <ClInclude Include="..\include\Camera.h" />
     <ClInclude Include="..\include\gl.h" />
     <ClInclude Include="..\include\Light.h" />
     <ClInclude Include="..\include\Mesh.h" />
@@ -150,6 +150,9 @@
     <ClInclude Include="..\include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\Explode.fs" />
+    <None Include="..\shaders\Explode.gs" />
+    <None Include="..\shaders\Explode.vs" />
     <None Include="..\shaders\Instances.fs" />
     <None Include="..\shaders\Instances.vs" />
     <None Include="..\shaders\Lights.fs" />

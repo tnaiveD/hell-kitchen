@@ -8,8 +8,7 @@
 
 #include "stb_image.h"
 
-#include "CamFPS.h"
-#include "Materials.h"
+#include "Camera.h"
 #include "Light.h"
 #include "Object.h"
 #include "Shader.h"
@@ -17,11 +16,10 @@
 #include "Model.h"
 
 
-#define SCR_WIDTH 1000
-#define SCR_HEIGHT 800
+#define SCR_WIDTH 1366
+#define SCR_HEIGHT 768
 
 #define HK_POSTPROCESS false
-#define SCF(x) static_cast<float>(x)
 
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -33,23 +31,24 @@ void shadersLogs(const std::vector<Shader*>&);
 
 using std::cout;
 
-
 /////////////////////////////////////////
-// Camera
-
-CamFPS cam(glm::vec3(0.0f, 10.0f, 50.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+// Speed
 
 //delta time
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
 
-//mouse view
+/////////////////////////////////////////
+// Camera
+
 float xLast = SCR_WIDTH / 2;
 float yLast = SCR_HEIGHT / 2;
 float yaw = -90.0f;
-float pitch = 0.f;
+float pitch = -10.f;
 
 bool firstCursor = true;
+
+Camera camera0(glm::vec3(0.f, 8.f, 40.f), glm::vec3(0.f, 1.f, 0.f), yaw, pitch);
 
 /////////////////////////////////////////
 // Lights
@@ -272,13 +271,13 @@ int main() {
 
 	glm::mat4* models = new glm::mat4[amount];
 
-	srand(glfwGetTime());
+	srand(time(NULL));
 	for (unsigned int i = 0; i < amount; i++)
 	{
 		glm::mat4 model(1.0f);
 
 		// 1. translate
-		float angle = SCF(i) / SCF(amount) * 360.f;
+		float angle = static_cast<float>(i) / static_cast<float>(amount) * 360.f;
 		float displacement = (rand() % static_cast<int>(offset * 2 * 100)) / 100.f - offset;
 		float x = radius * sin(glm::radians(angle)) + displacement;
 
@@ -291,11 +290,11 @@ int main() {
 		model = glm::translate(model, glm::vec3(x, y, z));
 
 		// 2. scale
-		float r_scale = SCF(rand() % 25 + 10) / 100.f;
+		float r_scale = static_cast<float>(rand() % 25 + 10) / 100.f;
 		model = glm::scale(model, glm::vec3(r_scale, r_scale, r_scale));
 
 		// 3. rotate
-		model = glm::rotate(model, glm::radians(SCF(rand() % 360)), glm::vec3(0.4f, .6f, .8f));
+		model = glm::rotate(model, glm::radians(static_cast<float>(rand() % 360)), glm::vec3(0.4f, .6f, .8f));
 
 
 		models[i] = model;
@@ -337,6 +336,7 @@ int main() {
 	Shader shaderPostproc("..\\shaders\\Postprocess.vs", "..\\shaders\\Postprocess.fs");
 	Shader shaderSkybox("..\\shaders\\Skybox.vs", "..\\shaders\\Skybox.fs");
 	Shader shaderInstances("..\\shaders\\Instances.vs", "..\\shaders\\Lights.fs");
+	Shader shaderExplode("..\\shaders\\Explode.vs", "..\\shaders\\Explode.fs", "..\\shaders\\Explode.gs");
 	
 	std::vector<Shader*> shaders;
 	shaders.push_back(&shader0);
@@ -344,6 +344,7 @@ int main() {
 	shaders.push_back(&shaderPostproc);
 	shaders.push_back(&shaderSkybox);
 	shaders.push_back(&shaderInstances);
+	shaders.push_back(&shaderExplode);
 	
 	//interface blocks
 	//--------------------------------------
@@ -406,6 +407,19 @@ int main() {
 	shaderInstances.setDLight(DLight);
 	shaderInstances.setBool("DLActive", true);
 
+	//shaderExplode
+	//-----------------------------------
+	shaderExplode.use();
+
+	shaderExplode.setInt("fuMaterial.tex_diffuse0", 0);
+	shaderExplode.setInt("fuMaterial.tex_specular0", 1);
+	shaderExplode.setFloat("fuMaterial.shininess", 256.f);
+
+	shaderExplode.setInt("SLnum", 0);
+	shaderExplode.setInt("PLnum", 0);
+
+	shaderExplode.setDLight(DLight);
+	shaderExplode.setBool("DLActive", true);
 
 	////////////////////////////////////////
 	// Pre-Render
@@ -435,14 +449,15 @@ int main() {
 
 	//multisampling
 	//-----------------------------------
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	////////////////////////////////////////////
 	// RENDER
 
 	glfwSetTime(0);
-	srand(glfwGetTime());
-	cam.setSpeed(cam.getSpeed() * 4.f);
+	srand(time(0));
+
+	camera0.setMovementSpeed(camera0.getMovementSpeed() * 4.f);
 
 	//render cycle
 	//-----------------------------------
@@ -457,14 +472,12 @@ int main() {
 		float currentFrame = time;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		cam.setDeltaTime(deltaTime);
 
 		////////////////////////////////////
 		// Camera
 
-		glm::vec3 camPos = cam.getPos();
-		glm::vec3 camDir = cam.getDir();
-		glm::mat4 camView = cam.getView();
+		glm::vec3 camPos = camera0.getPos();
+		glm::mat4 camView = camera0.getView();
 
 		////////////////////////////////////
 		// Shader blocks
@@ -487,18 +500,17 @@ int main() {
 		//planet
 		//--------------------------
 
-		shader0.use();
+		shaderExplode.use();
+		shaderExplode.setFloat("time", time);
+		
 		model = glm::scale(model, glm::vec3(5.f, 5.f, 5.f));
 		//model = glm::rotate(model, glm::radians(75.f), glm::vec3(0.f, 0.f, 1.f));
 		model = glm::rotate(model, glm::radians(time * 1.25f), glm::vec3(0.5f, 1.f, 0.f));
 
-		shader0.setMat4("vuModel", model);
-		planet0.draw(shader0);
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.f, 15.f, 0.f));
-		shader0.setMat4("vuModel", model);
-		rock0.meshes[0].draw(shader0);
+		shaderExplode.setMat4("vuModel", model);
+		//shader0.use();
+		//shader0.setMat4("vuModel", model);
+		planet0.draw(shaderExplode);
 
 		//rocks
 		//--------------------------
@@ -516,28 +528,7 @@ int main() {
 
 		glBindVertexArray(0);
 
-		/*
 		
-
-		WE HERE!!!!!!!!!!!!!!!!!!!!!
-
-
-		*/
-
-
-		//skybox
-		//--------------------------
-		/*glDepthFunc(GL_LEQUAL);
-		
-		shaderSkybox.use();
-
-		glBindVertexArray(VAOskybox);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, texSkybox);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glDepthFunc(GL_LESS);*/
-
 		//postprocess
 		//--------------------------
 
@@ -569,6 +560,7 @@ int main() {
 	shader0Stencil.suicide();
 	shaderInstances.suicide();
 	shaderPostproc.suicide();
+	shaderExplode.suicide();
 	
 	glfwTerminate();
 	system("pause");
@@ -579,56 +571,48 @@ void framebuffer_size_callback(GLFWwindow* window, int x, int y) {
 	glViewport(0, 0, x, y);
 }
 
-void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos) {
+void cursor_pos_callback(GLFWwindow* window, double xIn, double yIn)
+{
+	float _xIn = static_cast<float>(xIn);
+	float _yIn = static_cast<float>(yIn);
 
 	if (firstCursor) {
-		xLast = xPos;
-		yLast = yPos;
+		xLast = _xIn;
+		yLast = _yIn;
 		firstCursor = false;
 	}
 
-	float xOffset = xPos - xLast;
-	float yOffset = yLast - yPos;
-	xLast = xPos;
-	yLast = yPos;
-	float sensitivity = 0.02f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
+	float xOffset = _xIn - xLast;
+	float yOffset = yLast - _yIn;
 
-	yaw += xOffset;
-	pitch += yOffset;
+	xLast = _xIn;
+	yLast = _yIn;
 
-	if (pitch > 89.0f) pitch = 89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
-
-	glm::vec3 dir;
-	dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	dir.y = sin(glm::radians(pitch));
-	dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cam.setDir(glm::normalize(dir));
+	camera0.processMouseMovement(xOffset, yOffset);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int modes) {
 
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window)
+{
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 
 	//camera movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cam.moveFront();
+		camera0.move(Camera::Direction::FRONT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cam.moveBack();
+		camera0.move(Camera::Direction::BACK, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cam.moveLeft();
+		camera0.move(Camera::Direction::LEFT, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cam.moveRight();
+		camera0.move(Camera::Direction::RIGHT, deltaTime);
 	}
 
 }
